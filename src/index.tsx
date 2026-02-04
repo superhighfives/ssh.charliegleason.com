@@ -1,13 +1,82 @@
-import { createCliRenderer, TextAttributes } from "@opentui/core";
-import { createRoot } from "@opentui/react";
+// src/index.tsx
+
+import { createCliRenderer } from "@opentui/core";
+import { createRoot, useKeyboard } from "@opentui/react";
+import { useState } from "react";
+
+import { menuItems, projects, contact, type MenuItem } from "./data/content";
+import { MainMenu } from "./views/MainMenu";
+import { AboutView } from "./views/AboutView";
+import { ProjectsView } from "./views/ProjectsView";
+import { AwardsView } from "./views/AwardsView";
+import { TalksView } from "./views/TalksView";
+import { ContactView } from "./views/ContactView";
+
+type View = "main" | MenuItem;
 
 function App() {
+  const [currentView, setCurrentView] = useState<View>("main");
+  const [menuIndex, setMenuIndex] = useState(0);
+  const [subIndex, setSubIndex] = useState(0);
+
+  useKeyboard((key) => {
+    if (key.name === "q") {
+      process.exit(0);
+    }
+
+    if (currentView === "main") {
+      if (key.name === "up") {
+        setMenuIndex((i) => Math.max(0, i - 1));
+      } else if (key.name === "down") {
+        setMenuIndex((i) => Math.min(menuItems.length - 1, i + 1));
+      } else if (key.name === "return") {
+        const selectedItem = menuItems[menuIndex];
+        if (selectedItem) {
+          setSubIndex(0);
+          setCurrentView(selectedItem);
+        }
+      }
+    } else {
+      // In sub-view
+      if (key.name === "escape" || key.name === "backspace") {
+        setCurrentView("main");
+      } else if (key.name === "up") {
+        setSubIndex((i) => Math.max(0, i - 1));
+      } else if (key.name === "down") {
+        const maxIndex =
+          currentView === "Projects"
+            ? projects.length - 1
+            : currentView === "Contact"
+            ? contact.length - 1
+            : 0;
+        setSubIndex((i) => Math.min(maxIndex, i + 1));
+      }
+    }
+  });
+
+  const handleNavigate = (item: MenuItem) => {
+    setSubIndex(0);
+    setCurrentView(item);
+  };
+
+  const handleBack = () => {
+    setCurrentView("main");
+  };
+
   return (
-    <box alignItems="center" justifyContent="center" flexGrow={1}>
-      <box justifyContent="center" alignItems="flex-end">
-        <ascii-font font="tiny" text="OpenTUI" />
-        <text attributes={TextAttributes.DIM}>What will you build?</text>
-      </box>
+    <box flexGrow={1}>
+      {currentView === "main" && (
+        <MainMenu selectedIndex={menuIndex} onNavigate={handleNavigate} />
+      )}
+      {currentView === "About" && <AboutView onBack={handleBack} />}
+      {currentView === "Projects" && (
+        <ProjectsView selectedIndex={subIndex} onBack={handleBack} />
+      )}
+      {currentView === "Awards" && <AwardsView onBack={handleBack} />}
+      {currentView === "Talks" && <TalksView onBack={handleBack} />}
+      {currentView === "Contact" && (
+        <ContactView selectedIndex={subIndex} onBack={handleBack} />
+      )}
     </box>
   );
 }
