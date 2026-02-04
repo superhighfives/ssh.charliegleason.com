@@ -19,9 +19,10 @@ export function TalksView({ onBack }: TalksViewProps) {
       </box>
       <box flexDirection="column">
         {talks.map((talk, index) => (
-          <text key={index} fg={colors.white}>
-            <text fg={colors.yellow}>{talk.year}</text>  {talk.title}
-          </text>
+          <box key={index} flexDirection="row">
+            <text fg={colors.yellow}>{talk.year}</text>
+            <text fg={colors.white}>  {talk.title}</text>
+          </box>
         ))}
       </box>
     </box>

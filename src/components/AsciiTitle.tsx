@@ -5,9 +5,7 @@ import { colors } from "../theme";
 export function AsciiTitle() {
   return (
     <box flexDirection="column">
-      <text fg={colors.yellow}>
-        <ascii-font font="tiny" text="Charlie Gleason" />
-      </text>
+      <ascii-font font="tiny" text="Charlie Gleason" />
       <text fg={colors.white}>Designer, developer, creative coder, and musician.</text>
     </box>
   );

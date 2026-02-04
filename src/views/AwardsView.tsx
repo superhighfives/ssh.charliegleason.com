@@ -20,9 +20,10 @@ export function AwardsView({ onBack }: AwardsViewProps) {
       <scrollbox flexGrow={1}>
         <box flexDirection="column">
           {awards.map((award, index) => (
-            <text key={index} fg={colors.white}>
-              <text fg={colors.yellow}>{award.year}</text>  {award.title}
-            </text>
+            <box key={index} flexDirection="row">
+              <text fg={colors.yellow}>{award.year}</text>
+              <text fg={colors.white}>  {award.title}</text>
+            </box>
           ))}
         </box>
       </scrollbox>
