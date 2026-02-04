@@ -11,7 +11,7 @@ type AboutViewProps = {
 export function AboutView({ onBack }: AboutViewProps) {
   return (
     <box flexDirection="column" flexGrow={1} padding={1} alignItems="center">
-      <box flexDirection="column" width={80}>
+      <box flexDirection="column" width={80} flexGrow={1}>
         <text fg={colors.dim} content="← Back (esc)" />
         <box marginTop={1}>
           <text fg={colors.yellow} attributes={TextAttributes.BOLD} content="About" />
@@ -19,7 +19,11 @@ export function AboutView({ onBack }: AboutViewProps) {
         <box marginTop={1} marginBottom={1}>
           <text fg={colors.border} content="────────────────────────────────────────────────────────────────────────────" />
         </box>
-        <text fg={colors.white} content={bio.full} />
+        <scrollbox flexGrow={1} focused>
+          <box flexDirection="column">
+            <text fg={colors.white} content={bio.full} />
+          </box>
+        </scrollbox>
       </box>
     </box>
   );

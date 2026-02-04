@@ -41,6 +41,12 @@ function App() {
       process.exit(0);
     }
 
+    // Back navigation (works in all sub-views)
+    if (currentView !== "main" && (key.name === "escape" || key.name === "backspace")) {
+      setCurrentView("main");
+      return;
+    }
+
     if (currentView === "main") {
       if (key.name === "up") {
         setMenuIndex((i) => Math.max(0, i - 1));
@@ -53,11 +59,12 @@ function App() {
           setCurrentView(selectedItem);
         }
       }
+    } else if (currentView === "About" || currentView === "More") {
+      // About and More views - no navigation, let scrollbox handle keys
+      // (only escape/backspace handled above)
     } else {
-      // In sub-view
-      if (key.name === "escape" || key.name === "backspace") {
-        setCurrentView("main");
-      } else if (key.name === "return") {
+      // Projects, Writing, Contact - handle selection navigation
+      if (key.name === "return") {
         // Open URL for the selected item
         if (currentView === "Projects" && projects[subIndex]) {
           openUrl(projects[subIndex].url);

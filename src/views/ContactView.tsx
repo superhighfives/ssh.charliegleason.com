@@ -24,32 +24,30 @@ export function ContactView({ selectedIndex, onBack, onOpenUrl }: ContactViewPro
   return (
     <box flexDirection="column" flexGrow={1} padding={1} alignItems="center">
       <box flexDirection="column" width={80}>
-        <text fg={colors.dim} content="← Back (esc)" />
+        <text fg={colors.dim} content="← Back (esc)  •  ↑/↓ Navigate  •  Enter to open" />
         <box marginTop={1}>
           <text fg={colors.yellow} attributes={TextAttributes.BOLD} content="Contact" />
         </box>
         <box marginTop={1} marginBottom={1}>
           <text fg={colors.border} content="────────────────────────────────────────────────────────────────────────────" />
         </box>
-        <scrollbox flexGrow={1} focused>
-          <box flexDirection="column">
-            {contact.map((item, index) => {
-              const isSelected = index === selectedIndex;
-              const icon = asciiIcons[item.label] || "[---]";
-              const prefix = isSelected ? "> " : "  ";
-              return (
-                <box key={item.label} flexDirection="column" marginBottom={1}>
-                  <text 
-                    fg={isSelected ? colors.yellow : colors.white} 
-                    content={`${prefix}${icon} ${item.label}`} 
-                  />
-                  <text fg={colors.dim} content={`       ${item.description}`} />
-                  <text fg={colors.dim} content={`       ${item.url}  ${isSelected ? "[Enter to open]" : ""}`} />
-                </box>
-              );
-            })}
-          </box>
-        </scrollbox>
+        <box flexDirection="column">
+          {contact.map((item, index) => {
+            const isSelected = index === selectedIndex;
+            const icon = asciiIcons[item.label] || "[---]";
+            const prefix = isSelected ? "> " : "  ";
+            return (
+              <box key={item.label} flexDirection="column" marginBottom={1}>
+                <text 
+                  fg={isSelected ? colors.yellow : colors.white} 
+                  content={`${prefix}${icon} ${item.label}`} 
+                />
+                <text fg={colors.dim} content={`       ${item.description}`} />
+                <text fg={colors.dim} content={`       ${item.url}`} />
+              </box>
+            );
+          })}
+        </box>
       </box>
     </box>
   );

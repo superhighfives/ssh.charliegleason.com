@@ -14,31 +14,29 @@ export function ProjectsView({ selectedIndex, onBack, onOpenUrl }: ProjectsViewP
   return (
     <box flexDirection="column" flexGrow={1} padding={1} alignItems="center">
       <box flexDirection="column" width={80}>
-        <text fg={colors.dim} content="← Back (esc)" />
+        <text fg={colors.dim} content="← Back (esc)  •  ↑/↓ Navigate  •  Enter to open" />
         <box marginTop={1}>
           <text fg={colors.yellow} attributes={TextAttributes.BOLD} content="Projects" />
         </box>
         <box marginTop={1} marginBottom={1}>
           <text fg={colors.border} content="────────────────────────────────────────────────────────────────────────────" />
         </box>
-        <scrollbox flexGrow={1} focused>
-          <box flexDirection="column">
-            {projects.map((project, index) => {
-              const isSelected = index === selectedIndex;
-              const prefix = isSelected ? "> " : "  ";
-              return (
-                <box key={project.name} flexDirection="column" marginBottom={1}>
-                  <text 
-                    fg={isSelected ? colors.yellow : colors.white} 
-                    content={`${prefix}${project.name}`} 
-                  />
-                  <text fg={colors.dim} content={`    ${project.description}`} />
-                  <text fg={colors.dim} content={`    ${project.url}  ${isSelected ? "[Enter to open]" : ""}`} />
-                </box>
-              );
-            })}
-          </box>
-        </scrollbox>
+        <box flexDirection="column">
+          {projects.map((project, index) => {
+            const isSelected = index === selectedIndex;
+            const prefix = isSelected ? "> " : "  ";
+            return (
+              <box key={project.name} flexDirection="column" marginBottom={1}>
+                <text 
+                  fg={isSelected ? colors.yellow : colors.white} 
+                  content={`${prefix}${project.name}`} 
+                />
+                <text fg={colors.dim} content={`    ${project.description}`} />
+                <text fg={colors.dim} content={`    ${project.url}`} />
+              </box>
+            );
+          })}
+        </box>
       </box>
     </box>
   );
