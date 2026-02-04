@@ -1,5 +1,6 @@
 // src/views/AboutView.tsx
 
+import { TextAttributes } from "@opentui/core";
 import { bio } from "../data/content";
 import { colors } from "../theme";
 
@@ -13,7 +14,7 @@ export function AboutView({ onBack }: AboutViewProps) {
       <box flexDirection="column" width={80}>
         <text fg={colors.dim} content="← Back (esc)" />
         <box marginTop={1}>
-          <text fg={colors.yellow} content="About" />
+          <text fg={colors.yellow} attributes={TextAttributes.BOLD} content="About" />
         </box>
         <box marginTop={1} marginBottom={1}>
           <text fg={colors.border} content="────────────────────────────────────────────────────────────────────────────" />

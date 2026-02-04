@@ -1,5 +1,6 @@
 // src/views/ContactView.tsx
 
+import { TextAttributes } from "@opentui/core";
 import { contact } from "../data/content";
 import { colors } from "../theme";
 
@@ -25,28 +26,30 @@ export function ContactView({ selectedIndex, onBack, onOpenUrl }: ContactViewPro
       <box flexDirection="column" width={80}>
         <text fg={colors.dim} content="← Back (esc)" />
         <box marginTop={1}>
-          <text fg={colors.yellow} content="Contact" />
+          <text fg={colors.yellow} attributes={TextAttributes.BOLD} content="Contact" />
         </box>
         <box marginTop={1} marginBottom={1}>
           <text fg={colors.border} content="────────────────────────────────────────────────────────────────────────────" />
         </box>
-        <box flexDirection="column">
-          {contact.map((item, index) => {
-            const isSelected = index === selectedIndex;
-            const icon = asciiIcons[item.label] || "[---]";
-            const prefix = isSelected ? "> " : "  ";
-            return (
-              <box key={item.label} flexDirection="column" marginBottom={1}>
-                <text 
-                  fg={isSelected ? colors.yellow : colors.white} 
-                  content={`${prefix}${icon} ${item.label}`} 
-                />
-                <text fg={colors.dim} content={`       ${item.description}`} />
-                <text fg={colors.dim} content={`       ${item.url}  ${isSelected ? "[Enter to open]" : ""}`} />
-              </box>
-            );
-          })}
-        </box>
+        <scrollbox flexGrow={1} focused>
+          <box flexDirection="column">
+            {contact.map((item, index) => {
+              const isSelected = index === selectedIndex;
+              const icon = asciiIcons[item.label] || "[---]";
+              const prefix = isSelected ? "> " : "  ";
+              return (
+                <box key={item.label} flexDirection="column" marginBottom={1}>
+                  <text 
+                    fg={isSelected ? colors.yellow : colors.white} 
+                    content={`${prefix}${icon} ${item.label}`} 
+                  />
+                  <text fg={colors.dim} content={`       ${item.description}`} />
+                  <text fg={colors.dim} content={`       ${item.url}  ${isSelected ? "[Enter to open]" : ""}`} />
+                </box>
+              );
+            })}
+          </box>
+        </scrollbox>
       </box>
     </box>
   );

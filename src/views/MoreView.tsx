@@ -1,5 +1,6 @@
 // src/views/MoreView.tsx
 
+import { TextAttributes } from "@opentui/core";
 import { awards, talks, education, certifications, volunteering, races } from "../data/content";
 import { colors } from "../theme";
 
@@ -10,18 +11,18 @@ type MoreViewProps = {
 export function MoreView({ onBack }: MoreViewProps) {
   return (
     <box flexDirection="column" flexGrow={1} padding={1} alignItems="center">
-      <box flexDirection="column" width={80}>
-        <text fg={colors.dim} content="← Back (esc)  •  Scroll: ↑/↓ or Page Up/Down" />
+      <box flexDirection="column" width={80} flexGrow={1}>
+        <text fg={colors.dim} content="← Back (esc)  •  Scroll: ↑/↓" />
         <box marginTop={1}>
-          <text fg={colors.yellow} content="More" />
+          <text fg={colors.yellow} attributes={TextAttributes.BOLD} content="More" />
         </box>
         <box marginTop={1} marginBottom={1}>
           <text fg={colors.border} content="────────────────────────────────────────────────────────────────────────────" />
         </box>
-        <scrollbox flexGrow={1} focused>
+        <scrollbox flexGrow={1} focused style={{ flexGrow: 1 }}>
           <box flexDirection="column">
             {/* Awards */}
-            <text fg={colors.yellow} content="AWARDS" />
+            <text fg={colors.yellow} attributes={TextAttributes.BOLD} content="AWARDS" />
             <box marginBottom={1} />
             {awards.map((award, idx) => (
               <text key={`award-${idx}`} fg={colors.white} content={`  ${award.year}  ${award.title}`} />
@@ -29,7 +30,7 @@ export function MoreView({ onBack }: MoreViewProps) {
 
             {/* Talks */}
             <box marginTop={2}>
-              <text fg={colors.yellow} content="TALKS" />
+              <text fg={colors.yellow} attributes={TextAttributes.BOLD} content="TALKS" />
             </box>
             <box marginBottom={1} />
             {talks.map((talk, idx) => (
@@ -38,7 +39,7 @@ export function MoreView({ onBack }: MoreViewProps) {
 
             {/* Education */}
             <box marginTop={2}>
-              <text fg={colors.yellow} content="EDUCATION" />
+              <text fg={colors.yellow} attributes={TextAttributes.BOLD} content="EDUCATION" />
             </box>
             <box marginBottom={1} />
             {education.map((edu, idx) => (
@@ -51,7 +52,7 @@ export function MoreView({ onBack }: MoreViewProps) {
 
             {/* Certifications */}
             <box marginTop={1}>
-              <text fg={colors.yellow} content="CERTIFICATIONS" />
+              <text fg={colors.yellow} attributes={TextAttributes.BOLD} content="CERTIFICATIONS" />
             </box>
             <box marginBottom={1} />
             {certifications.map((cert, idx) => (
@@ -60,7 +61,7 @@ export function MoreView({ onBack }: MoreViewProps) {
 
             {/* Volunteering */}
             <box marginTop={2}>
-              <text fg={colors.yellow} content="VOLUNTEERING" />
+              <text fg={colors.yellow} attributes={TextAttributes.BOLD} content="VOLUNTEERING" />
             </box>
             <box marginBottom={1} />
             {volunteering.map((vol, idx) => (
@@ -72,7 +73,7 @@ export function MoreView({ onBack }: MoreViewProps) {
 
             {/* Triathlons */}
             <box marginTop={2}>
-              <text fg={colors.yellow} content="TRIATHLONS" />
+              <text fg={colors.yellow} attributes={TextAttributes.BOLD} content="TRIATHLONS" />
             </box>
             <box marginBottom={1} />
             {races.triathlons.map((race, idx) => (
@@ -81,7 +82,7 @@ export function MoreView({ onBack }: MoreViewProps) {
 
             {/* Half Marathons */}
             <box marginTop={2}>
-              <text fg={colors.yellow} content="HALF MARATHONS" />
+              <text fg={colors.yellow} attributes={TextAttributes.BOLD} content="HALF MARATHONS" />
             </box>
             <box marginBottom={1} />
             {races.halfMarathons.map((race, idx) => (
@@ -90,7 +91,7 @@ export function MoreView({ onBack }: MoreViewProps) {
 
             {/* Marathons */}
             <box marginTop={2}>
-              <text fg={colors.yellow} content="MARATHONS" />
+              <text fg={colors.yellow} attributes={TextAttributes.BOLD} content="MARATHONS" />
             </box>
             <box marginBottom={1} />
             {races.marathons.map((race, idx) => (

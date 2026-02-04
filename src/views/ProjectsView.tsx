@@ -1,5 +1,6 @@
 // src/views/ProjectsView.tsx
 
+import { TextAttributes } from "@opentui/core";
 import { projects } from "../data/content";
 import { colors } from "../theme";
 
@@ -15,27 +16,29 @@ export function ProjectsView({ selectedIndex, onBack, onOpenUrl }: ProjectsViewP
       <box flexDirection="column" width={80}>
         <text fg={colors.dim} content="← Back (esc)" />
         <box marginTop={1}>
-          <text fg={colors.yellow} content="Projects" />
+          <text fg={colors.yellow} attributes={TextAttributes.BOLD} content="Projects" />
         </box>
         <box marginTop={1} marginBottom={1}>
           <text fg={colors.border} content="────────────────────────────────────────────────────────────────────────────" />
         </box>
-        <box flexDirection="column">
-          {projects.map((project, index) => {
-            const isSelected = index === selectedIndex;
-            const prefix = isSelected ? "> " : "  ";
-            return (
-              <box key={project.name} flexDirection="column" marginBottom={1}>
-                <text 
-                  fg={isSelected ? colors.yellow : colors.white} 
-                  content={`${prefix}${project.name}`} 
-                />
-                <text fg={colors.dim} content={`    ${project.description}`} />
-                <text fg={colors.dim} content={`    ${project.url}  ${isSelected ? "[Enter to open]" : ""}`} />
-              </box>
-            );
-          })}
-        </box>
+        <scrollbox flexGrow={1} focused>
+          <box flexDirection="column">
+            {projects.map((project, index) => {
+              const isSelected = index === selectedIndex;
+              const prefix = isSelected ? "> " : "  ";
+              return (
+                <box key={project.name} flexDirection="column" marginBottom={1}>
+                  <text 
+                    fg={isSelected ? colors.yellow : colors.white} 
+                    content={`${prefix}${project.name}`} 
+                  />
+                  <text fg={colors.dim} content={`    ${project.description}`} />
+                  <text fg={colors.dim} content={`    ${project.url}  ${isSelected ? "[Enter to open]" : ""}`} />
+                </box>
+              );
+            })}
+          </box>
+        </scrollbox>
       </box>
     </box>
   );
