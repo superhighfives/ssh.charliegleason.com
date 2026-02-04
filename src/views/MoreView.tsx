@@ -4,108 +4,103 @@ import { awards, talks, education, certifications, volunteering, races } from ".
 import { colors } from "../theme";
 
 type MoreViewProps = {
-  selectedIndex: number;
   onBack: () => void;
 };
 
-// Combine all items into a single scrollable list with section headers
-type MoreItem = 
-  | { type: "header"; title: string }
-  | { type: "item"; year?: string; title: string; subtitle?: string };
-
-function buildMoreItems(): MoreItem[] {
-  const items: MoreItem[] = [];
-
-  // Awards
-  items.push({ type: "header", title: "AWARDS" });
-  awards.forEach((a) => items.push({ type: "item", year: a.year, title: a.title }));
-
-  // Talks
-  items.push({ type: "header", title: "TALKS" });
-  talks.forEach((t) => items.push({ type: "item", year: t.year, title: t.title }));
-
-  // Education
-  items.push({ type: "header", title: "EDUCATION" });
-  education.forEach((e) => items.push({ 
-    type: "item", 
-    title: e.degree + (e.note ? ` (${e.note})` : ""),
-    subtitle: `${e.school} • ${e.years}`
-  }));
-
-  // Certifications
-  items.push({ type: "header", title: "CERTIFICATIONS" });
-  certifications.forEach((c) => items.push({ type: "item", year: c.year, title: c.title }));
-
-  // Volunteering
-  items.push({ type: "header", title: "VOLUNTEERING" });
-  volunteering.forEach((v) => items.push({ type: "item", title: v.org, subtitle: v.years }));
-
-  // Triathlons
-  items.push({ type: "header", title: "TRIATHLONS" });
-  races.triathlons.forEach((r) => items.push({ type: "item", year: r.year, title: r.title }));
-
-  // Half Marathons
-  items.push({ type: "header", title: "HALF MARATHONS" });
-  races.halfMarathons.forEach((r) => items.push({ type: "item", year: r.year, title: r.title }));
-
-  // Marathons
-  items.push({ type: "header", title: "MARATHONS" });
-  races.marathons.forEach((r) => items.push({ type: "item", year: r.year, title: r.title }));
-
-  return items;
-}
-
-const moreItems = buildMoreItems();
-
-// Get only navigable items (not headers)
-export const navigableMoreItems = moreItems.filter((item) => item.type === "item");
-
-export function MoreView({ selectedIndex, onBack }: MoreViewProps) {
-  let navigableIndex = 0;
-
+export function MoreView({ onBack }: MoreViewProps) {
   return (
-    <box flexDirection="column" flexGrow={1} padding={1}>
-      <text fg={colors.dim}>← Back</text>
-      <box marginTop={1}>
-        <text fg={colors.yellow}>More</text>
-      </box>
-      <box marginTop={1} marginBottom={1}>
-        <text fg={colors.border}>───────────────────────────────────────────────────────────────────────────</text>
-      </box>
-      <scrollbox flexGrow={1} focused>
-        <box flexDirection="column">
-          {moreItems.map((item, idx) => {
-            if (item.type === "header") {
-              return (
-                <box key={`header-${idx}`} marginTop={idx > 0 ? 1 : 0} marginBottom={1}>
-                  <text fg={colors.yellow}>{item.title}</text>
-                </box>
-              );
-            }
-
-            const isSelected = navigableIndex === selectedIndex;
-            const currentNavIndex = navigableIndex;
-            navigableIndex++;
-
-            return (
-              <box key={`item-${currentNavIndex}`} flexDirection="column" marginBottom={item.subtitle ? 1 : 0}>
-                <box flexDirection="row">
-                  <text fg={isSelected ? colors.yellow : colors.white}>
-                    {isSelected ? "> " : "  "}
-                  </text>
-                  {item.year && (
-                    <text fg={colors.yellow}>{item.year}  </text>
-                  )}
-                  <text fg={isSelected ? colors.yellow : colors.white}>{item.title}</text>
-                </box>
-                {item.subtitle && (
-                  <text fg={colors.dim}>    {item.subtitle}</text>
-                )}
-              </box>
-            );
-          })}
+    <box flexDirection="column" flexGrow={1} padding={1} alignItems="center">
+      <box flexDirection="column" width={80}>
+        <text fg={colors.dim} content="← Back (esc)  •  Scroll: ↑/↓ or Page Up/Down" />
+        <box marginTop={1}>
+          <text fg={colors.yellow} content="More" />
         </box>
-      </scrollbox>
+        <box marginTop={1} marginBottom={1}>
+          <text fg={colors.border} content="────────────────────────────────────────────────────────────────────────────" />
+        </box>
+        <scrollbox flexGrow={1} focused>
+          <box flexDirection="column">
+            {/* Awards */}
+            <text fg={colors.yellow} content="AWARDS" />
+            <box marginBottom={1} />
+            {awards.map((award, idx) => (
+              <text key={`award-${idx}`} fg={colors.white} content={`  ${award.year}  ${award.title}`} />
+            ))}
+
+            {/* Talks */}
+            <box marginTop={2}>
+              <text fg={colors.yellow} content="TALKS" />
+            </box>
+            <box marginBottom={1} />
+            {talks.map((talk, idx) => (
+              <text key={`talk-${idx}`} fg={colors.white} content={`  ${talk.year}  ${talk.title}`} />
+            ))}
+
+            {/* Education */}
+            <box marginTop={2}>
+              <text fg={colors.yellow} content="EDUCATION" />
+            </box>
+            <box marginBottom={1} />
+            {education.map((edu, idx) => (
+              <box key={`edu-${idx}`} flexDirection="column" marginBottom={1}>
+                <text fg={colors.white} content={`  ${edu.degree}${edu.note ? ` (${edu.note})` : ""}`} />
+                <text fg={colors.dim} content={`  ${edu.school}`} />
+                <text fg={colors.dim} content={`  ${edu.years}`} />
+              </box>
+            ))}
+
+            {/* Certifications */}
+            <box marginTop={1}>
+              <text fg={colors.yellow} content="CERTIFICATIONS" />
+            </box>
+            <box marginBottom={1} />
+            {certifications.map((cert, idx) => (
+              <text key={`cert-${idx}`} fg={colors.white} content={`  ${cert.year}  ${cert.title}`} />
+            ))}
+
+            {/* Volunteering */}
+            <box marginTop={2}>
+              <text fg={colors.yellow} content="VOLUNTEERING" />
+            </box>
+            <box marginBottom={1} />
+            {volunteering.map((vol, idx) => (
+              <box key={`vol-${idx}`} flexDirection="column">
+                <text fg={colors.white} content={`  ${vol.org}`} />
+                <text fg={colors.dim} content={`  ${vol.years}`} />
+              </box>
+            ))}
+
+            {/* Triathlons */}
+            <box marginTop={2}>
+              <text fg={colors.yellow} content="TRIATHLONS" />
+            </box>
+            <box marginBottom={1} />
+            {races.triathlons.map((race, idx) => (
+              <text key={`tri-${idx}`} fg={colors.white} content={`  ${race.year}  ${race.title}`} />
+            ))}
+
+            {/* Half Marathons */}
+            <box marginTop={2}>
+              <text fg={colors.yellow} content="HALF MARATHONS" />
+            </box>
+            <box marginBottom={1} />
+            {races.halfMarathons.map((race, idx) => (
+              <text key={`half-${idx}`} fg={colors.white} content={`  ${race.year}  ${race.title}`} />
+            ))}
+
+            {/* Marathons */}
+            <box marginTop={2}>
+              <text fg={colors.yellow} content="MARATHONS" />
+            </box>
+            <box marginBottom={1} />
+            {races.marathons.map((race, idx) => (
+              <text key={`marathon-${idx}`} fg={colors.white} content={`  ${race.year}  ${race.title}`} />
+            ))}
+
+            <box marginBottom={2} />
+          </box>
+        </scrollbox>
+      </box>
     </box>
   );
 }

@@ -10,42 +10,43 @@ const asciiIcons: Record<string, string> = {
   GitHub: "[GIT]",
   Twitter: "[TWR]",
   Dribbble: "[DRB]",
-  Email: "[AT@]",
+  Email: "[@@@]",
 };
 
 type ContactViewProps = {
   selectedIndex: number;
   onBack: () => void;
+  onOpenUrl: (url: string) => void;
 };
 
-export function ContactView({ selectedIndex, onBack }: ContactViewProps) {
+export function ContactView({ selectedIndex, onBack, onOpenUrl }: ContactViewProps) {
   return (
-    <box flexDirection="column" flexGrow={1} padding={1}>
-      <text fg={colors.dim}>← Back</text>
-      <box marginTop={1}>
-        <text fg={colors.yellow}>Contact</text>
-      </box>
-      <box marginTop={1} marginBottom={1}>
-        <text fg={colors.border}>───────────────────────────────────────────────────────────────────────────</text>
-      </box>
-      <box flexDirection="column">
-        {contact.map((item, index) => {
-          const isSelected = index === selectedIndex;
-          const icon = asciiIcons[item.label] || "[---]";
-          return (
-            <box key={item.label} flexDirection="column" marginBottom={1}>
-              <box flexDirection="row">
-                <text fg={isSelected ? colors.yellow : colors.white}>
-                  {isSelected ? "> " : "  "}
-                </text>
-                <text fg={colors.dim}>{icon} </text>
-                <text fg={isSelected ? colors.yellow : colors.white}>{item.label}</text>
+    <box flexDirection="column" flexGrow={1} padding={1} alignItems="center">
+      <box flexDirection="column" width={80}>
+        <text fg={colors.dim} content="← Back (esc)" />
+        <box marginTop={1}>
+          <text fg={colors.yellow} content="Contact" />
+        </box>
+        <box marginTop={1} marginBottom={1}>
+          <text fg={colors.border} content="────────────────────────────────────────────────────────────────────────────" />
+        </box>
+        <box flexDirection="column">
+          {contact.map((item, index) => {
+            const isSelected = index === selectedIndex;
+            const icon = asciiIcons[item.label] || "[---]";
+            const prefix = isSelected ? "> " : "  ";
+            return (
+              <box key={item.label} flexDirection="column" marginBottom={1}>
+                <text 
+                  fg={isSelected ? colors.yellow : colors.white} 
+                  content={`${prefix}${icon} ${item.label}`} 
+                />
+                <text fg={colors.dim} content={`       ${item.description}`} />
+                <text fg={colors.dim} content={`       ${item.url}  ${isSelected ? "[Enter to open]" : ""}`} />
               </box>
-              <text fg={colors.dim}>       {item.description}</text>
-              <text fg={colors.dim}>       {item.url}</text>
-            </box>
-          );
-        })}
+            );
+          })}
+        </box>
       </box>
     </box>
   );
