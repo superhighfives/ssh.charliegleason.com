@@ -56,6 +56,39 @@ export const projects = [
   },
 ];
 
+export const writing = [
+  {
+    title: "Running Ollama on your desktop GPU from anywhere with Cloudflare Tunnel",
+    description: "A complete guide to exposing Ollama running on a Windows PC with a 4090 GPU so you can use it remotely with opencode via a secure Cloudflare Tunnel.",
+    url: "code.charliegleason.com/cloudflare-tunnel-ollama-opencode",
+  },
+  {
+    title: "Building an MCP weather server on Cloudflare Workers",
+    description: "A complete guide to building and deploying a Model Context Protocol server that gives Claude weather superpowers.",
+    url: "code.charliegleason.com/building-mcp-weather-cloudflare",
+  },
+  {
+    title: "Getting started with Cloudflare Workers for image generation",
+    description: "A quick guide to building dynamic Open Graph images on the edge with Cloudflare Workers.",
+    url: "code.charliegleason.com/getting-started-cloudflare-workers-image-generation",
+  },
+  {
+    title: "Adding beautiful shaders to your site with paper-design/shaders",
+    description: "How to use WebGL on easy mode.",
+    url: "code.charliegleason.com/paper-design-shaders",
+  },
+  {
+    title: "Understanding context windows in Claude Code",
+    description: "Or how to make the most of your tokens.",
+    url: "code.charliegleason.com/understanding-context-windows",
+  },
+  {
+    title: "Side projects and love letters",
+    description: "On the value of making things and sharing them.",
+    url: "code.charliegleason.com/side-projects-and-love-letters",
+  },
+];
+
 export const awards = [
   { year: "2024", title: "AWWWARDS, Nomination for Typography Honors, Lysterfield Lake" },
   { year: "2023", title: "AWWWARDS, Honourable Mention, Lysterfield Lake" },
@@ -97,14 +130,52 @@ export const talks = [
   { year: "2011", title: "What Do You Know: How to make your life more awesome with CSS3 media queries" },
 ];
 
-export const contact = [
-  { label: "Website", url: "charliegleason.com" },
-  { label: "Writing", url: "code.charliegleason.com" },
-  { label: "GitHub", url: "github.com/superhighfives" },
-  { label: "Twitter", url: "twitter.com/superhighfives" },
-  { label: "Dribbble", url: "dribbble.com/superhighfives" },
-  { label: "Email", url: "hello@charliegleason.com" },
+export const education = [
+  {
+    degree: "Masters of Computer Science",
+    school: "RMIT University, Melbourne",
+    years: "2011 - incomplete",
+  },
+  {
+    degree: "Bachelor of Design (Multimedia Design)",
+    school: "Swinburne School of Design, Melbourne",
+    years: "2004 - 2007",
+    note: "First Class Honours",
+  },
 ];
 
-export const menuItems = ["About", "Projects", "Awards", "Talks", "Contact"] as const;
+export const certifications = [
+  { year: "2022", title: "Salesforce User Experience (UX) Designer Certification" },
+];
+
+export const volunteering = [
+  { org: "Samaritans", years: "2020 - 2024" },
+];
+
+export const races = {
+  triathlons: [
+    { year: "2023", title: "Blenheim Palace Triathlon (Sprint)" },
+    { year: "2022", title: "Blenheim Palace Triathlon (Sprint)" },
+  ],
+  halfMarathons: [
+    { year: "2025", title: "Fremont Quarry Lakes, Alameda, Santa Rosa, San Francisco Presidio, Oakland" },
+    { year: "2022", title: "Manchester Great Run" },
+    { year: "2021", title: "London Landmarks" },
+  ],
+  marathons: [
+    { year: "2017", title: "London" },
+    { year: "2015", title: "London" },
+  ],
+};
+
+export const contact = [
+  { label: "Website", url: "charliegleason.com", icon: "🌐", description: "Main portfolio site" },
+  { label: "Writing", url: "code.charliegleason.com", icon: "📝", description: "Code and development blog" },
+  { label: "GitHub", url: "github.com/superhighfives", icon: "🐙", description: "@superhighfives" },
+  { label: "Twitter", url: "twitter.com/superhighfives", icon: "🐦", description: "@superhighfives" },
+  { label: "Dribbble", url: "dribbble.com/superhighfives", icon: "🏀", description: "@superhighfives" },
+  { label: "Email", url: "hello@charliegleason.com", icon: "📧", description: "Get in touch" },
+];
+
+export const menuItems = ["About", "Projects", "Writing", "More", "Contact"] as const;
 export type MenuItem = (typeof menuItems)[number];

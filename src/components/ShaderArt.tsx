@@ -1,57 +1,49 @@
 // src/components/ShaderArt.tsx
 
 import { useEffect, useState, useMemo } from "react";
-import { useTimeline } from "@opentui/react";
 import { getRandomShader } from "../data/shaders";
 import { colors } from "../theme";
 
 export function ShaderArt() {
   const shader = useMemo(() => getRandomShader(), []);
-  const [revealProgress, setRevealProgress] = useState(0);
+  const [frame, setFrame] = useState(0);
 
-  const timeline = useTimeline({
-    duration: 1500,
-    loop: false,
-  });
-
+  // Continuous animation loop
   useEffect(() => {
-    timeline.add(
-      { progress: 0 },
-      {
-        progress: 1,
-        duration: 1500,
-        ease: "outExpo",
-        onUpdate: (animation) => {
-          setRevealProgress(animation.targets[0].progress);
-        },
-      }
-    );
+    const interval = setInterval(() => {
+      setFrame((f) => f + 1);
+    }, 150); // Update every 150ms for smooth animation
+
+    return () => clearInterval(interval);
   }, []);
 
-  // Create revealed version of shader based on progress
-  const revealedShader = useMemo(() => {
+  // Create animated version of shader with pulsing/shifting effect
+  const animatedShader = useMemo(() => {
     const chars = shader.split("");
-    const totalChars = chars.filter((c) => c !== " " && c !== "\n").length;
-    const charsToShow = Math.floor(totalChars * revealProgress);
-
-    let shown = 0;
+    const densityChars = ["·", ":", "░", "▒", "▓", "█"];
+    
     return chars
-      .map((char) => {
+      .map((char, i) => {
         if (char === " " || char === "\n") return char;
-        if (shown < charsToShow) {
-          shown++;
-          return char;
-        }
-        // Random noise character for unrevealed
-        const noise = ["·", ":", "░", " "];
-        return revealProgress > 0.1 ? noise[Math.floor(Math.random() * noise.length)] : " ";
+        
+        // Find the density level of this character
+        const charIndex = densityChars.indexOf(char);
+        if (charIndex === -1) return char;
+        
+        // Create a wave effect based on position and frame
+        const wave = Math.sin((i * 0.3) + (frame * 0.2));
+        const shift = Math.round(wave * 1.5);
+        
+        // Shift the density up or down
+        const newIndex = Math.max(0, Math.min(densityChars.length - 1, charIndex + shift));
+        return densityChars[newIndex];
       })
       .join("");
-  }, [shader, revealProgress]);
+  }, [shader, frame]);
 
   return (
-    <box>
-      <text fg={colors.yellow}>{revealedShader}</text>
+    <box justifyContent="center">
+      <text fg={colors.yellow}>{animatedShader}</text>
     </box>
   );
 }

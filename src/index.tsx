@@ -4,12 +4,12 @@ import { createCliRenderer } from "@opentui/core";
 import { createRoot, useKeyboard } from "@opentui/react";
 import { useState } from "react";
 
-import { menuItems, projects, contact, type MenuItem } from "./data/content";
+import { menuItems, projects, writing, contact, type MenuItem } from "./data/content";
 import { MainMenu } from "./views/MainMenu";
 import { AboutView } from "./views/AboutView";
 import { ProjectsView } from "./views/ProjectsView";
-import { AwardsView } from "./views/AwardsView";
-import { TalksView } from "./views/TalksView";
+import { WritingView } from "./views/WritingView";
+import { MoreView, navigableMoreItems } from "./views/MoreView";
 import { ContactView } from "./views/ContactView";
 
 type View = "main" | MenuItem;
@@ -43,12 +43,16 @@ function App() {
       } else if (key.name === "up") {
         setSubIndex((i) => Math.max(0, i - 1));
       } else if (key.name === "down") {
-        const maxIndex =
-          currentView === "Projects"
-            ? projects.length - 1
-            : currentView === "Contact"
-            ? contact.length - 1
-            : 0;
+        let maxIndex = 0;
+        if (currentView === "Projects") {
+          maxIndex = projects.length - 1;
+        } else if (currentView === "Writing") {
+          maxIndex = writing.length - 1;
+        } else if (currentView === "More") {
+          maxIndex = navigableMoreItems.length - 1;
+        } else if (currentView === "Contact") {
+          maxIndex = contact.length - 1;
+        }
         setSubIndex((i) => Math.min(maxIndex, i + 1));
       }
     }
@@ -72,8 +76,12 @@ function App() {
       {currentView === "Projects" && (
         <ProjectsView selectedIndex={subIndex} onBack={handleBack} />
       )}
-      {currentView === "Awards" && <AwardsView onBack={handleBack} />}
-      {currentView === "Talks" && <TalksView onBack={handleBack} />}
+      {currentView === "Writing" && (
+        <WritingView selectedIndex={subIndex} onBack={handleBack} />
+      )}
+      {currentView === "More" && (
+        <MoreView selectedIndex={subIndex} onBack={handleBack} />
+      )}
       {currentView === "Contact" && (
         <ContactView selectedIndex={subIndex} onBack={handleBack} />
       )}
