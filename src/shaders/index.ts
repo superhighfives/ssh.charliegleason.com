@@ -10,12 +10,11 @@ export { simplex2, fbm, seedNoise } from "./noise";
 
 // Character sets
 const DENSITY_CHARS = " ·:░▒▓█";
-const ARROW_CHARS = "→↗↑↖←↙↓↘"; // 8 directions
 
 // Pre-computed colors for FrameBuffer rendering
 const TRANSPARENT = RGBA.fromValues(0, 0, 0, 0);
 
-export type ShaderType = "flowField" | "plasma" | "waves" | "metaballs" | "rings";
+export type ShaderType = "plasma" | "waves" | "metaballs" | "rings";
 
 export interface ShaderConfig {
   width: number;
@@ -35,32 +34,12 @@ function getDensityChar(value: number): string {
   return DENSITY_CHARS[index] || " ";
 }
 
-function getArrowChar(angle: number): string {
-  const normalizedAngle = ((angle % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
-  const index = Math.floor((normalizedAngle / (Math.PI * 2)) * 8 + 0.5) % 8;
-  return ARROW_CHARS[index] || "→";
-}
-
 function getIntensityColor(value: number): RGBA {
   const intensity = clamp(value, 0.2, 1.0);
   return RGBA.fromValues(1.0, 0.84 * intensity, 0.0, 1.0);
 }
 
 // --- Shader core functions (compute value at point) ---
-
-function flowFieldAt(x: number, y: number, time: number, scale: number): { char: string; value: number } {
-  const nx = x * scale;
-  const ny = y * scale * 2;
-  const t = time * 0.5;
-
-  const angle = simplex2(nx + t, ny) * Math.PI * 2;
-  const intensity = (simplex2(nx * 2 + 100, ny * 2 + t * 0.3) + 1) / 2;
-
-  if (intensity > 0.3) {
-    return { char: getArrowChar(angle), value: intensity };
-  }
-  return { char: " ", value: 0 };
-}
 
 function plasmaAt(x: number, y: number, time: number, scale: number): { char: string; value: number } {
   const nx = x * scale;
@@ -149,20 +128,6 @@ function ringsAt(
 
 // --- String rendering (returns multiline string) ---
 
-export function flowField(config: ShaderConfig): string {
-  const { width, height, time, scale = 0.15 } = config;
-  const lines: string[] = [];
-
-  for (let y = 0; y < height; y++) {
-    let line = "";
-    for (let x = 0; x < width; x++) {
-      line += flowFieldAt(x, y, time, scale).char;
-    }
-    lines.push(line);
-  }
-  return lines.join("\n");
-}
-
 export function plasma(config: ShaderConfig): string {
   const { width, height, time, scale = 0.2 } = config;
   const lines: string[] = [];
@@ -221,7 +186,6 @@ export function rings(config: ShaderConfig): string {
 
 // String shader registry
 const stringShaders: Record<ShaderType, (config: ShaderConfig) => string> = {
-  flowField,
   plasma,
   waves,
   metaballs,
@@ -234,22 +198,6 @@ export function renderShader(type: ShaderType, config: ShaderConfig): string {
 }
 
 // --- FrameBuffer rendering (writes directly to OptimizedBuffer) ---
-
-export function renderFlowFieldToBuffer(
-  fb: OptimizedBuffer,
-  width: number,
-  height: number,
-  time: number,
-  scale: number = 0.15
-): void {
-  for (let y = 0; y < height; y++) {
-    for (let x = 0; x < width; x++) {
-      const { char, value } = flowFieldAt(x, y, time, scale);
-      const color = value > 0 ? getIntensityColor(value) : TRANSPARENT;
-      fb.setCell(x, y, char, color, TRANSPARENT);
-    }
-  }
-}
 
 export function renderPlasmaToBuffer(
   fb: OptimizedBuffer,
@@ -312,7 +260,6 @@ export function renderRingsToBuffer(
 
 // FrameBuffer shader registry
 const bufferShaders: Record<ShaderType, (fb: OptimizedBuffer, w: number, h: number, t: number) => void> = {
-  flowField: renderFlowFieldToBuffer,
   plasma: renderPlasmaToBuffer,
   waves: renderWavesToBuffer,
   metaballs: renderMetaballsToBuffer,
@@ -334,7 +281,7 @@ export function renderShaderToBuffer(
 
 /** Get a random shader type */
 export function getRandomShaderType(): ShaderType {
-  const types: ShaderType[] = ["flowField", "plasma", "waves", "metaballs", "rings"];
+  const types: ShaderType[] = ["plasma", "waves", "metaballs", "rings"];
   return types[Math.floor(Math.random() * types.length)]!;
 }
 

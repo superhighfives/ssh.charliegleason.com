@@ -3,7 +3,7 @@
 export const colors = {
   yellow: "#FFD700",
   white: "#FFFFFF",
-  dim: "#888888",
+  dim: "#999999",
   border: "#444444",
   background: "#1a1a1a",
 };

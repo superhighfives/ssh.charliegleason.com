@@ -27,12 +27,14 @@ export function ProjectsView({ selectedIndex, onBack, onOpenUrl }: ProjectsViewP
             const prefix = isSelected ? "> " : "  ";
             return (
               <box key={project.name} flexDirection="column" marginBottom={1}>
-                <text 
-                  fg={isSelected ? colors.yellow : colors.white} 
-                  content={`${prefix}${project.name}`} 
-                />
-                <text fg={colors.dim} content={`    ${project.description}`} />
-                <text fg={colors.dim} content={`    ${project.url}`} />
+                <box flexDirection="row">
+                  <text 
+                    fg={isSelected ? colors.yellow : colors.white} 
+                    content={`${prefix}${project.name}`} 
+                  />
+                  <text fg={colors.dim} marginLeft={2} content={`(${project.url})`} />
+                </box>
+                <text fg={colors.dim} marginLeft={2} content={project.description} />
               </box>
             );
           })}

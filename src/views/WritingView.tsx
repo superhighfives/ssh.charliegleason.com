@@ -31,8 +31,7 @@ export function WritingView({ selectedIndex, onBack, onOpenUrl }: WritingViewPro
                   fg={isSelected ? colors.yellow : colors.white} 
                   content={`${prefix}${article.title}`} 
                 />
-                <text fg={colors.dim} content={`    ${article.description}`} />
-                <text fg={colors.dim} content={`    ${article.url}`} />
+                <text fg={colors.dim} marginLeft={2} content={article.description} />
               </box>
             );
           })}

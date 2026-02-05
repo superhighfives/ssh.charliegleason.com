@@ -4,16 +4,6 @@ import { TextAttributes } from "@opentui/core";
 import { contact } from "../data/content";
 import { colors } from "../theme";
 
-// ASCII icons for each contact type
-const asciiIcons: Record<string, string> = {
-  Website: "[WWW]",
-  Writing: "[TXT]",
-  GitHub: "[GIT]",
-  Twitter: "[TWR]",
-  Dribbble: "[DRB]",
-  Email: "[@@@]",
-};
-
 type ContactViewProps = {
   selectedIndex: number;
   onBack: () => void;
@@ -34,13 +24,12 @@ export function ContactView({ selectedIndex, onBack, onOpenUrl }: ContactViewPro
         <box flexDirection="column">
           {contact.map((item, index) => {
             const isSelected = index === selectedIndex;
-            const icon = asciiIcons[item.label] || "[---]";
             const prefix = isSelected ? "> " : "  ";
             return (
               <box key={item.label} flexDirection="column" marginBottom={1}>
                 <text 
                   fg={isSelected ? colors.yellow : colors.white} 
-                  content={`${prefix}${icon} ${item.label}`} 
+                  content={`${prefix}${item.label}`} 
                 />
                 <text fg={colors.dim} content={`       ${item.description}`} />
                 <text fg={colors.dim} content={`       ${item.url}`} />
