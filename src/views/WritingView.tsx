@@ -1,6 +1,7 @@
 // src/views/WritingView.tsx
 
-import { TextAttributes } from "@opentui/core";
+import { TextAttributes, type ScrollBoxRenderable } from "@opentui/core";
+import type { RefObject } from "react";
 import { writing } from "../data/content";
 import { colors } from "../theme";
 
@@ -8,12 +9,16 @@ type WritingViewProps = {
   selectedIndex: number;
   onBack: () => void;
   onOpenUrl: (url: string) => void;
+  scrollRef: RefObject<ScrollBoxRenderable | null>;
 };
 
-export function WritingView({ selectedIndex, onBack, onOpenUrl }: WritingViewProps) {
+const MAX_WIDTH = 80;
+const MAX_HEIGHT = 24;
+
+export function WritingView({ selectedIndex, onBack, onOpenUrl, scrollRef }: WritingViewProps) {
   return (
-    <box flexDirection="column" flexGrow={1} padding={1} alignItems="center">
-      <box flexDirection="column" width={80}>
+    <box flexDirection="column" padding={1}>
+      <box flexDirection="column" width={MAX_WIDTH} height={MAX_HEIGHT}>
         <text fg={colors.dim} content="← Back (esc)  •  ↑/↓ Navigate  •  Enter to open" />
         <box marginTop={1}>
           <text fg={colors.yellow} attributes={TextAttributes.BOLD} content="Writing" />
@@ -21,21 +26,24 @@ export function WritingView({ selectedIndex, onBack, onOpenUrl }: WritingViewPro
         <box marginTop={1} marginBottom={1}>
           <text fg={colors.border} content="────────────────────────────────────────────────────────────────────────────" />
         </box>
-        <box flexDirection="column">
-          {writing.map((article, index) => {
-            const isSelected = index === selectedIndex;
-            const prefix = isSelected ? "> " : "  ";
-            return (
-              <box key={article.url} flexDirection="column" marginBottom={1}>
-                <text 
-                  fg={isSelected ? colors.yellow : colors.white} 
-                  content={`${prefix}${article.title}`} 
-                />
-                <text fg={colors.dim} marginLeft={2} content={article.description} />
-              </box>
-            );
-          })}
-        </box>
+        <scrollbox ref={scrollRef} flexGrow={1}>
+          <box flexDirection="column">
+            {writing.map((article, index) => {
+              const isSelected = index === selectedIndex;
+              const isLast = index === writing.length - 1;
+              const prefix = isSelected ? "> " : "  ";
+              return (
+                <box key={article.url} flexDirection="column" marginBottom={isLast ? 0 : 1}>
+                  <text 
+                    fg={isSelected ? colors.yellow : colors.white} 
+                    content={`${prefix}${article.title}`} 
+                  />
+                  <text fg={colors.dim} marginLeft={2} content={article.description} />
+                </box>
+              );
+            })}
+          </box>
+        </scrollbox>
       </box>
     </box>
   );

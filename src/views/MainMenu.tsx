@@ -16,7 +16,7 @@ const MAX_WIDTH = 80;
 
 export function MainMenu({ selectedIndex, onNavigate }: MainMenuProps) {
   return (
-    <box flexDirection="column" flexGrow={1} padding={1} alignItems="center">
+    <box flexDirection="column" padding={1}>
       <box flexDirection="column" width={MAX_WIDTH}>
         {/* Header: Shader + Title */}
         <box flexDirection="row" gap={2} marginBottom={1} alignItems="center">

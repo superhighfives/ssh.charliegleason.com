@@ -2,7 +2,7 @@
 
 import { createCliRenderer, type ScrollBoxRenderable } from "@opentui/core";
 import { createRoot, useKeyboard } from "@opentui/react";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { exec } from "child_process";
 
 import { menuItems, projects, writing, contact, type MenuItem } from "./data/content";
@@ -27,10 +27,20 @@ function openUrl(url: string) {
   exec(command);
 }
 
+// Approximate number of items visible in scrollable list views
+const VISIBLE_ITEMS = 4;
+// Rows per item (for scroll calculation) - varies by view
+const ROWS_PER_ITEM: Record<string, number> = {
+  Projects: 3,
+  Writing: 3,
+  Contact: 4,
+};
+
 function App() {
   const [currentView, setCurrentView] = useState<View>("main");
   const [menuIndex, setMenuIndex] = useState(0);
   const [subIndex, setSubIndex] = useState(0);
+  const [visibleStart, setVisibleStart] = useState(0); // Track which item is at top of visible area
   const scrollRef = useRef<ScrollBoxRenderable>(null);
 
   const handleOpenUrl = (url: string) => {
@@ -82,7 +92,16 @@ function App() {
           openUrl(contact[subIndex].url);
         }
       } else if (key.name === "up") {
-        setSubIndex((i) => Math.max(0, i - 1));
+        if (subIndex > 0) {
+          const newIndex = subIndex - 1;
+          setSubIndex(newIndex);
+          // Scroll up only if selection moves above visible area
+          if (newIndex < visibleStart) {
+            setVisibleStart(newIndex);
+            const rowsPerItem = ROWS_PER_ITEM[currentView] ?? 3;
+            scrollRef.current?.scrollBy(-rowsPerItem);
+          }
+        }
       } else if (key.name === "down") {
         let maxIndex = 0;
         if (currentView === "Projects") {
@@ -92,13 +111,30 @@ function App() {
         } else if (currentView === "Contact") {
           maxIndex = contact.length - 1;
         }
-        setSubIndex((i) => Math.min(maxIndex, i + 1));
+        if (subIndex < maxIndex) {
+          const newIndex = subIndex + 1;
+          setSubIndex(newIndex);
+          // Scroll down only if selection moves below visible area
+          if (newIndex >= visibleStart + VISIBLE_ITEMS) {
+            setVisibleStart(newIndex - VISIBLE_ITEMS + 1);
+            const rowsPerItem = ROWS_PER_ITEM[currentView] ?? 3;
+            scrollRef.current?.scrollBy(rowsPerItem);
+          }
+        }
       }
     }
   });
 
+  // Reset scroll position when view changes
+  useEffect(() => {
+    if (currentView !== "main") {
+      scrollRef.current?.scrollTo(0);
+    }
+  }, [currentView]);
+
   const handleNavigate = (item: MenuItem) => {
     setSubIndex(0);
+    setVisibleStart(0);
     setCurrentView(item);
   };
 
@@ -107,22 +143,22 @@ function App() {
   };
 
   return (
-    <box flexGrow={1}>
+    <box flexGrow={1} justifyContent="center" alignItems="center">
       {currentView === "main" && (
         <MainMenu selectedIndex={menuIndex} onNavigate={handleNavigate} />
       )}
       {currentView === "About" && <AboutView onBack={handleBack} scrollRef={scrollRef} />}
       {currentView === "Projects" && (
-        <ProjectsView selectedIndex={subIndex} onBack={handleBack} onOpenUrl={handleOpenUrl} />
+        <ProjectsView selectedIndex={subIndex} onBack={handleBack} onOpenUrl={handleOpenUrl} scrollRef={scrollRef} />
       )}
       {currentView === "Writing" && (
-        <WritingView selectedIndex={subIndex} onBack={handleBack} onOpenUrl={handleOpenUrl} />
+        <WritingView selectedIndex={subIndex} onBack={handleBack} onOpenUrl={handleOpenUrl} scrollRef={scrollRef} />
       )}
       {currentView === "More" && (
         <MoreView onBack={handleBack} scrollRef={scrollRef} />
       )}
       {currentView === "Contact" && (
-        <ContactView selectedIndex={subIndex} onBack={handleBack} onOpenUrl={handleOpenUrl} />
+        <ContactView selectedIndex={subIndex} onBack={handleBack} onOpenUrl={handleOpenUrl} scrollRef={scrollRef} />
       )}
     </box>
   );
