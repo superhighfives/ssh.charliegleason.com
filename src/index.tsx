@@ -1,8 +1,8 @@
 // src/index.tsx
 
-import { createCliRenderer } from "@opentui/core";
+import { createCliRenderer, type ScrollBoxRenderable } from "@opentui/core";
 import { createRoot, useKeyboard } from "@opentui/react";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { exec } from "child_process";
 
 import { menuItems, projects, writing, contact, type MenuItem } from "./data/content";
@@ -31,6 +31,7 @@ function App() {
   const [currentView, setCurrentView] = useState<View>("main");
   const [menuIndex, setMenuIndex] = useState(0);
   const [subIndex, setSubIndex] = useState(0);
+  const scrollRef = useRef<ScrollBoxRenderable>(null);
 
   const handleOpenUrl = (url: string) => {
     openUrl(url);
@@ -47,6 +48,16 @@ function App() {
       return;
     }
 
+    // For About and More views, manually scroll the scrollbox
+    if (currentView === "About" || currentView === "More") {
+      if (key.name === "up") {
+        scrollRef.current?.scrollBy(-3);
+      } else if (key.name === "down") {
+        scrollRef.current?.scrollBy(3);
+      }
+      return;
+    }
+
     if (currentView === "main") {
       if (key.name === "up") {
         setMenuIndex((i) => Math.max(0, i - 1));
@@ -59,9 +70,6 @@ function App() {
           setCurrentView(selectedItem);
         }
       }
-    } else if (currentView === "About" || currentView === "More") {
-      // About and More views - no navigation, let scrollbox handle keys
-      // (only escape/backspace handled above)
     } else {
       // Projects, Writing, Contact - handle selection navigation
       if (key.name === "return") {
@@ -103,7 +111,7 @@ function App() {
       {currentView === "main" && (
         <MainMenu selectedIndex={menuIndex} onNavigate={handleNavigate} />
       )}
-      {currentView === "About" && <AboutView onBack={handleBack} />}
+      {currentView === "About" && <AboutView onBack={handleBack} scrollRef={scrollRef} />}
       {currentView === "Projects" && (
         <ProjectsView selectedIndex={subIndex} onBack={handleBack} onOpenUrl={handleOpenUrl} />
       )}
@@ -111,7 +119,7 @@ function App() {
         <WritingView selectedIndex={subIndex} onBack={handleBack} onOpenUrl={handleOpenUrl} />
       )}
       {currentView === "More" && (
-        <MoreView onBack={handleBack} />
+        <MoreView onBack={handleBack} scrollRef={scrollRef} />
       )}
       {currentView === "Contact" && (
         <ContactView selectedIndex={subIndex} onBack={handleBack} onOpenUrl={handleOpenUrl} />

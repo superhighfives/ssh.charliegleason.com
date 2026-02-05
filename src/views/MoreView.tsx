@@ -1,14 +1,16 @@
 // src/views/MoreView.tsx
 
-import { TextAttributes } from "@opentui/core";
+import { TextAttributes, type ScrollBoxRenderable } from "@opentui/core";
+import type { RefObject } from "react";
 import { awards, talks, education, certifications, volunteering, races } from "../data/content";
 import { colors } from "../theme";
 
 type MoreViewProps = {
   onBack: () => void;
+  scrollRef: RefObject<ScrollBoxRenderable | null>;
 };
 
-export function MoreView({ onBack }: MoreViewProps) {
+export function MoreView({ onBack, scrollRef }: MoreViewProps) {
   return (
     <box flexDirection="column" flexGrow={1} padding={1} alignItems="center">
       <box flexDirection="column" width={80} flexGrow={1}>
@@ -19,7 +21,7 @@ export function MoreView({ onBack }: MoreViewProps) {
         <box marginTop={1} marginBottom={1}>
           <text fg={colors.border} content="────────────────────────────────────────────────────────────────────────────" />
         </box>
-        <scrollbox flexGrow={1} focused style={{ flexGrow: 1 }}>
+        <scrollbox ref={scrollRef} flexGrow={1}>
           <box flexDirection="column">
             {/* Awards */}
             <text fg={colors.yellow} attributes={TextAttributes.BOLD} content="AWARDS" />
