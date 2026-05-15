@@ -47,11 +47,13 @@ bun dev
 
 This runs the app with hot-reloading enabled via `bun run --watch`.
 
-### Production
+### Run the TUI directly
 
 ```bash
 bun run src/index.tsx
 ```
+
+For SSH access (how the production site is served), see [SSH Access](#ssh-access) below.
 
 ## Keyboard Controls
 
@@ -68,6 +70,7 @@ bun run src/index.tsx
 ssh.charliegleason.com/
 ├── src/
 │   ├── index.tsx          # Main entry point with routing and keyboard handling
+│   ├── ssh-server.ts      # SSH front door (ssh2 + node-pty)
 │   ├── theme.ts           # Color palette and spacing constants
 │   ├── components/
 │   │   ├── AsciiTitle.tsx # ASCII art title header
@@ -86,6 +89,8 @@ ssh.charliegleason.com/
 │       ├── WritingView.tsx  # Blog posts
 │       ├── MoreView.tsx     # Awards, talks, education, races
 │       └── ContactView.tsx  # Contact information
+├── Dockerfile             # Production container (Node + Bun)
+├── fly.toml               # Fly.io deploy config
 ├── package.json
 └── tsconfig.json
 ```
@@ -181,11 +186,67 @@ The shader type is randomly selected on each launch. Character density mapping u
 
 ## SSH Access
 
-To make this portfolio accessible via SSH, you can deploy it using:
+The app ships with an SSH front door (`src/ssh-server.ts`) that spawns a fresh TUI per session. The wrapper uses `ssh2` + `node-pty` and runs on Node; the TUI child runs on Bun.
 
-- A cloud VM with SSH access
-- [Wish](https://github.com/charmbracelet/wish) - SSH server library
-- Docker container with SSH enabled
+### Try it locally
+
+```bash
+bun ssh
+# in another terminal:
+ssh -p 2222 anyone@localhost
+```
+
+The server generates a host key on first run if `./host_key` doesn't exist. Any username works - the server accepts unauthenticated sessions, since this is a public kiosk. The host key stays on your machine (it's in `.gitignore`).
+
+### Deploy to Fly.io
+
+This repo includes a `Dockerfile` and `fly.toml` configured for a tiny machine in London running the SSH server on port 22. The host key is auto-generated on first boot and persisted to a 1GB volume.
+
+```bash
+# 1. Launch the app, but don't deploy yet
+fly launch --no-deploy --copy-config
+
+# 2. Create the volume that will hold the host key
+fly volumes create host_keys --region lhr --size 1
+
+# 3. Allocate a dedicated IPv4 (required for port 22)
+fly ips allocate-v4
+
+# 4. Deploy
+fly deploy
+
+# 5. Get the IP to point DNS at
+fly ips list
+```
+
+Then in Cloudflare DNS, add an `A` record for `ssh` pointing at the Fly IPv4. **Make sure the proxy is OFF (grey cloud)** - Cloudflare's HTTP proxy doesn't forward SSH.
+
+Expected cost on Fly: ~$5.45/month (`shared-cpu-1x` 512MB + dedicated IPv4 + 1GB volume).
+
+### Connecting
+
+```bash
+ssh ssh.charliegleason.com
+```
+
+The first connection prompts to trust the host key. After that it goes straight into the TUI.
+
+### Configuration
+
+The SSH server reads these env vars (all optional, sensible defaults):
+
+| Variable                  | Default                  | Purpose                              |
+| ------------------------- | ------------------------ | ------------------------------------ |
+| `SSH_PORT`                | `2222`                   | Port to listen on                    |
+| `SSH_HOST_KEY_PATH`       | `./host_key`             | Path to ed25519/rsa host key file    |
+| `APP_CMD` / `APP_ARGS`    | `bun` / `src/index.tsx`  | Child process to spawn per session   |
+| `SSH_MAX_CONCURRENT`      | `25`                     | Max simultaneous sessions            |
+| `SSH_IDLE_TIMEOUT_MS`     | `300000` (5 min)         | Kill session after inactivity        |
+| `SSH_SESSION_MAX_MS`      | `1800000` (30 min)       | Hard cap per session                 |
+| `SSH_RATE_LIMIT_MAX`      | `10`                     | Connections per IP per window        |
+| `SSH_RATE_LIMIT_WINDOW_MS`| `60000` (1 min)          | Rate limit window                    |
+
+In SSH mode (`SSH_MODE=1`, set automatically by the wrapper), the TUI doesn't run `open` on the server. URLs are still visible next to each item, so users can copy them from their terminal.
 
 ## Credits
 

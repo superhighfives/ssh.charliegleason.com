@@ -4,10 +4,12 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "bun run --watch src/index.tsx"
+    "dev": "bun run --watch src/index.tsx",
+    "ssh": "node --experimental-strip-types src/ssh-server.ts"
   },
   "devDependencies": {
-    "@types/bun": "latest"
+    "@types/bun": "latest",
+    "@types/ssh2": "^1.15.5"
   },
   "peerDependencies": {
     "typescript": "^5"
@@ -15,6 +17,8 @@
   "dependencies": {
     "@opentui/core": "^0.1.75",
     "@opentui/react": "^0.1.75",
-    "react": "^19.2.3"
+    "node-pty": "^1.1.0",
+    "react": "^19.2.3",
+    "ssh2": "^1.17.0"
   }
 }

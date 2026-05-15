@@ -15,14 +15,20 @@ import { ContactView } from "./views/ContactView";
 
 type View = "main" | MenuItem;
 
-// Open URL in default browser
+// In SSH mode, running `open` would launch a browser on the *server*, which
+// is wrong. URLs are already visible next to each item in the lists, so
+// remote users can copy them from the terminal. Locally we still launch the
+// user's default browser.
+const SSH_MODE = process.env.SSH_MODE === "1";
+
 function openUrl(url: string) {
+  if (SSH_MODE) return;
+
   const fullUrl = url.startsWith("http") ? url : `https://${url}`;
-  // Use 'open' on macOS, 'xdg-open' on Linux, 'start' on Windows
-  const command = process.platform === "darwin" 
-    ? `open "${fullUrl}"` 
-    : process.platform === "win32" 
-    ? `start "${fullUrl}"` 
+  const command = process.platform === "darwin"
+    ? `open "${fullUrl}"`
+    : process.platform === "win32"
+    ? `start "${fullUrl}"`
     : `xdg-open "${fullUrl}"`;
   exec(command);
 }
