@@ -33,6 +33,7 @@ function loadOrCreateHostKey(path: string): Buffer {
 
 // Command used to launch the TUI per session. Defaults to running this repo
 // via bun. In production we set APP_CMD/APP_ARGS via env.
+// Note: APP_ARGS is split on spaces - paths with spaces aren't supported.
 const APP_CMD = process.env.APP_CMD ?? "bun";
 const APP_ARGS = (process.env.APP_ARGS ?? "src/index.tsx").split(" ");
 
@@ -59,6 +60,16 @@ function rateLimited(ip: string): boolean {
   return entry.count > RATE_LIMIT_MAX;
 }
 
+// Sweep expired rate-limit entries so a public endpoint that gets scanned
+// constantly doesn't accumulate unique IPs forever. .unref() so the timer
+// doesn't keep the process alive on shutdown.
+setInterval(() => {
+  const now = Date.now();
+  for (const [ip, entry] of attempts) {
+    if (entry.resetAt < now) attempts.delete(ip);
+  }
+}, RATE_LIMIT_WINDOW_MS).unref();
+
 const server = new Server(
   {
     hostKeys: [loadOrCreateHostKey(HOST_KEY_PATH)],
@@ -73,13 +84,23 @@ const server = new Server(
       return;
     }
 
+    // Check-and-reserve a slot atomically. Node's event loop is single-
+    // threaded, so reading and incrementing `active` in the same tick is
+    // safe. We release the slot in the `close` handler below.
     if (active >= MAX_CONCURRENT) {
       console.log(`[full] rejecting ${ip}`);
       client.end();
       return;
     }
+    active += 1;
+    let slotReleased = false;
+    const releaseSlot = () => {
+      if (slotReleased) return;
+      slotReleased = true;
+      active = Math.max(0, active - 1);
+    };
 
-    console.log(`[connect] ${ip} (active=${active + 1})`);
+    console.log(`[connect] ${ip} (active=${active})`);
 
     // Public kiosk: accept any auth method, including "none".
     client.on("authentication", (ctx) => ctx.accept());
@@ -124,7 +145,6 @@ const server = new Server(
 
         session.on("shell", (accept) => {
           const stream = accept();
-          active += 1;
 
           try {
             pty = ptySpawn(APP_CMD, APP_ARGS, {
@@ -144,7 +164,6 @@ const server = new Server(
             stream.write("failed to start session\r\n");
             stream.exit(1);
             stream.end();
-            active -= 1;
             return;
           }
 
@@ -190,8 +209,6 @@ const server = new Server(
             } catch {
               // already gone
             }
-            active = Math.max(0, active - 1);
-            console.log(`[end] ${ip} (active=${active})`);
           });
         });
 
@@ -208,7 +225,8 @@ const server = new Server(
     });
 
     client.on("close", () => {
-      // active counter is managed inside the shell handler
+      releaseSlot();
+      console.log(`[end] ${ip} (active=${active})`);
     });
   }
 );

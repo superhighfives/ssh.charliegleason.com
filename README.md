@@ -239,7 +239,7 @@ The SSH server reads these env vars (all optional, sensible defaults):
 | ------------------------- | ------------------------ | ------------------------------------ |
 | `SSH_PORT`                | `2222`                   | Port to listen on                    |
 | `SSH_HOST_KEY_PATH`       | `./host_key`             | Path to ed25519/rsa host key file    |
-| `APP_CMD` / `APP_ARGS`    | `bun` / `src/index.tsx`  | Child process to spawn per session   |
+| `APP_CMD` / `APP_ARGS`    | `bun` / `src/index.tsx`  | Child process to spawn per session. `APP_ARGS` is split on spaces, so paths with spaces aren't supported. |
 | `SSH_MAX_CONCURRENT`      | `25`                     | Max simultaneous sessions            |
 | `SSH_IDLE_TIMEOUT_MS`     | `300000` (5 min)         | Kill session after inactivity        |
 | `SSH_SESSION_MAX_MS`      | `1800000` (30 min)       | Hard cap per session                 |
