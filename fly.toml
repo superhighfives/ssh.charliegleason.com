@@ -1,38 +1,30 @@
-# fly.toml - SSH front door for ssh.charliegleason.com
+# fly.toml app configuration file generated for ssh-charliegleason on 2026-05-19T11:21:58+10:00
 #
-# Deploy with:
-#   fly launch --no-deploy --copy-config
-#   fly volumes create host_keys --region lhr --size 1
-#   fly ips allocate-v4              # dedicated IPv4 required for port 22
-#   fly deploy
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
-# The host key is auto-generated on first boot and persisted to the volume.
-# Then point ssh.charliegleason.com A record at the address from `fly ips list`
-# with Cloudflare's proxy turned OFF (grey cloud).
 
-app = "ssh-charliegleason"
-primary_region = "lhr"
+app = 'ssh-charliegleason'
+primary_region = 'lhr'
 
 [build]
 
-# Single small VM. Stays running 24/7 - we don't auto-stop, since SSH
-# wake-up wouldn't be transparent to clients.
-[[vm]]
-  size = "shared-cpu-1x"
-  memory = "512mb"
+[env]
+  APP_ARGS = 'src/index.tsx'
+  APP_CMD = 'bun'
+  SSH_IDLE_TIMEOUT_MS = '300000'
+  SSH_MAX_CONCURRENT = '25'
+  SSH_PORT = '2222'
+  SSH_SESSION_MAX_MS = '1800000'
 
-# Persistent volume for the SSH host key. 1GB is the minimum, costs $0.15/mo.
-# We only use a few hundred bytes of it.
 [[mounts]]
-  source = "host_keys"
-  destination = "/data"
-  initial_size = "1gb"
+  source = 'host_keys'
+  destination = '/data'
+  initial_size = '1gb'
 
-# Expose port 22 to the internet, forwarding to the container's 2222.
 [[services]]
-  protocol = "tcp"
+  protocol = 'tcp'
   internal_port = 2222
-  auto_stop_machines = "off"
+  auto_stop_machines = 'off'
   auto_start_machines = true
   min_machines_running = 1
 
@@ -40,19 +32,15 @@ primary_region = "lhr"
     port = 22
 
   [services.concurrency]
-    type = "connections"
+    type = 'connections'
     hard_limit = 50
     soft_limit = 25
 
   [[services.tcp_checks]]
-    interval = "30s"
-    timeout = "5s"
-    grace_period = "10s"
+    interval = '30s'
+    timeout = '5s'
+    grace_period = '10s'
 
-[env]
-  SSH_PORT = "2222"
-  APP_CMD = "bun"
-  APP_ARGS = "src/index.tsx"
-  SSH_MAX_CONCURRENT = "25"
-  SSH_IDLE_TIMEOUT_MS = "300000"
-  SSH_SESSION_MAX_MS = "1800000"
+[[vm]]
+  size = 'shared-cpu-1x'
+  memory = '512mb'

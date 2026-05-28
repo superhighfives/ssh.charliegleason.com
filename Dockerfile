@@ -4,12 +4,15 @@
 
 FROM node:22-bookworm-slim AS base
 
-# Install Bun for the TUI child process.
+# Install Bun for the TUI child process, plus build tools for native addons.
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     ca-certificates \
     unzip \
     tini \
+    python3 \
+    make \
+    g++ \
     && rm -rf /var/lib/apt/lists/* \
     && curl -fsSL https://bun.sh/install | bash \
     && ln -s /root/.bun/bin/bun /usr/local/bin/bun
@@ -17,8 +20,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 WORKDIR /app
 
 COPY package.json bun.lock ./
-RUN bun install --frozen-lockfile \
-    && chmod +x node_modules/node-pty/prebuilds/*/spawn-helper 2>/dev/null || true
+RUN npm install --omit=dev
 
 COPY . .
 
@@ -32,5 +34,5 @@ EXPOSE 2222
 
 # tini handles signal forwarding so SIGTERM from Fly cleanly stops the server.
 # The server self-generates a host key into /data on first boot.
-ENTRYPOINT ["/usr/bin/tini", "--"]
+ENTRYPOINT ["/usr/bin/tini", "-s", "--"]
 CMD ["node", "--experimental-strip-types", "src/ssh-server.ts"]
