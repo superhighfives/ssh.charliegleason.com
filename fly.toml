@@ -1,0 +1,46 @@
+# fly.toml app configuration file generated for ssh-charliegleason on 2026-05-19T11:21:58+10:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = 'ssh-charliegleason'
+primary_region = 'lhr'
+
+[build]
+
+[env]
+  APP_ARGS = 'src/index.tsx'
+  APP_CMD = 'bun'
+  SSH_IDLE_TIMEOUT_MS = '300000'
+  SSH_MAX_CONCURRENT = '25'
+  SSH_PORT = '2222'
+  SSH_SESSION_MAX_MS = '1800000'
+
+[[mounts]]
+  source = 'host_keys'
+  destination = '/data'
+  initial_size = '1gb'
+
+[[services]]
+  protocol = 'tcp'
+  internal_port = 2222
+  auto_stop_machines = 'off'
+  auto_start_machines = true
+  min_machines_running = 1
+
+  [[services.ports]]
+    port = 22
+
+  [services.concurrency]
+    type = 'connections'
+    hard_limit = 50
+    soft_limit = 25
+
+  [[services.tcp_checks]]
+    interval = '30s'
+    timeout = '5s'
+    grace_period = '10s'
+
+[[vm]]
+  size = 'shared-cpu-1x'
+  memory = '512mb'

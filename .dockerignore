@@ -1,0 +1,10 @@
+node_modules
+.git
+.DS_Store
+host_key
+host_key.pub
+*.log
+.env
+.env.*
+docs
+README.md
