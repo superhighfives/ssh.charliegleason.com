@@ -36,6 +36,12 @@ Users type `ssh ssh.yourdomain.com`. Two characters more than the apex version. 
 
 This is what this repo is configured for.
 
+### How it works
+
+The server uses [`@opentui/ssh`](https://www.npmjs.com/package/@opentui/ssh), which turns each incoming SSH connection into an OpenTUI `CliRenderer` wired straight to the SSH channel. One Bun process serves every client - no per-session child process, no PTY, no native build dependencies. The React tree in `src/index.tsx` mounts onto each session's renderer via `@opentui/react`'s `createRoot`.
+
+The container runs `bun run src/ssh-server.tsx` under tini for clean signal handling. A 1GB volume mounts at `/data` to persist the ed25519 host key across deploys - first boot generates it, every boot after that loads it. Same host key means clients' `known_hosts` entries keep working through restarts.
+
 ### How to set it up
 
 The repo includes a Dockerfile and fly.toml that does most of the work.
@@ -65,6 +71,30 @@ Then in Cloudflare DNS:
 That's it. `ssh ssh.yourdomain.com` works. Total cost on Fly: about $5.50/month for a `shared-cpu-1x` 512MB machine plus the dedicated IPv4 and 1GB volume.
 
 If you want to make the command discoverable, add it somewhere prominent on your website. A copy-to-clipboard button beside `ssh ssh.yourdomain.com` is plenty.
+
+### Redeploying
+
+After the initial setup, `fly deploy` is the only command you need. Fly builds the Dockerfile on its remote builder, rolls the machine, and the volume keeps your host key persistent across restarts.
+
+A few flags worth knowing:
+
+- `fly logs` tails live output. `@opentui/ssh`'s built-in logging middleware emits a `connect` event per session and a `disconnect` (with duration) on teardown.
+- `fly status` shows the machine state, region, and last deploy.
+- `fly ssh console` opens Fly's own management SSH into the running container - useful for poking at `/data/host_key` or checking processes. This is separate from the public SSH service on `:22`.
+- `fly deploy --strategy immediate` skips the health-check wait if you're iterating quickly. The default rolling strategy is safer for anything user-facing.
+
+The repo runs as a single machine by default. That means `fly deploy` is a stop-then-start with ~10-30s of downtime. If you want zero-downtime deploys, run two machines with `fly scale count 2` first; Fly will then roll them one at a time.
+
+### Tuning
+
+The defaults are conservative for a kiosk-style TUI. A few env vars in `fly.toml` are worth knowing about:
+
+- `SSH_MAX_CONCURRENT` - hard cap on simultaneous sessions across the server. Default 50. The in-process model uses a fraction of the memory the old PTY-spawn model needed, so this can climb if you actually see contention.
+- `SSH_IDLE_TIMEOUT_MS` - drop a session after this long with no client input. Default 5 minutes.
+- `SSH_SESSION_MAX_MS` - absolute lifetime cap regardless of activity. Default 30 minutes.
+- `SSH_RATE_LIMIT_MAX` / `SSH_RATE_LIMIT_WINDOW_MS` - per-IP rate limit, defaults to 10 connection attempts per minute. Implemented as `@opentui/ssh` middleware in `src/ssh-server.tsx`.
+
+`fly.toml`'s `services.concurrency` limits sit one layer above these - they tell Fly's proxy when to start queueing or rejecting at the edge. Keep them above `SSH_MAX_CONCURRENT` so the app's own limits are what trip first.
 
 ## Option 3: Move the whole site to a Fly origin
 
