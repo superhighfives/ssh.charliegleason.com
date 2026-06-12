@@ -5,6 +5,10 @@
 FROM node:22-bookworm-slim AS base
 
 # Install Bun for the TUI child process, plus build tools for native addons.
+# ncurses-bin provides `tic` and `infocmp`, which Ghostty's ssh-terminfo
+# shell integration uses to upload the xterm-ghostty terminfo entry on
+# connect. Without it, Ghostty users see a hang on
+# "Setting up xterm-ghostty terminfo on ..." until they ^C.
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     ca-certificates \
@@ -13,6 +17,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python3 \
     make \
     g++ \
+    ncurses-bin \
     && rm -rf /var/lib/apt/lists/* \
     && curl -fsSL https://bun.sh/install | bash \
     && ln -s /root/.bun/bin/bun /usr/local/bin/bun
