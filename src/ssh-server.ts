@@ -70,10 +70,24 @@ setInterval(() => {
   }
 }, RATE_LIMIT_WINDOW_MS).unref();
 
+// Shown by the client before auth completes. Keep it ASCII-safe so it
+// renders cleanly across SSH clients. CRLF line endings are required by
+// the SSH protocol.
+const BANNER = [
+  "",
+  "   ___ ___  _  _  ",
+  "  / __/ __|| || | ",
+  "  \\__ \\__ \\| __ | ",
+  "  |___/___/|_||_|  ssh.charliegleason.com",
+  "",
+  "  charlie's terminal portfolio - starting up...",
+  "",
+].join("\r\n") + "\r\n";
+
 const server = new Server(
   {
     hostKeys: [loadOrCreateHostKey(HOST_KEY_PATH)],
-    banner: "welcome to ssh.charliegleason.com\r\n",
+    banner: BANNER,
   },
   (client, info) => {
     const ip = info.ip;
@@ -146,6 +160,35 @@ const server = new Server(
         session.on("shell", (accept) => {
           const stream = accept();
 
+          // Show a spinner while bun cold-starts and the OpenTUI renderer
+          // wakes up - usually 1-2s. We clear it as soon as the child PTY
+          // emits its first byte, which is when the TUI is about to draw.
+          // Hide the cursor while we're animating so it doesn't blink
+          // mid-frame; the TUI manages its own cursor visibility after.
+          const SPINNER_FRAMES = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
+          let spinnerFrame = 0;
+          stream.write("\x1b[?25l  loading ");
+          const spinnerTimer = setInterval(() => {
+            const frame = SPINNER_FRAMES[spinnerFrame++ % SPINNER_FRAMES.length];
+            // \b backs up over the previous spinner char, then we write the
+            // next frame. Single-char width keeps this simple across terms.
+            stream.write(`\b${frame}`);
+          }, 80);
+
+          let spinnerStopped = false;
+          const stopSpinner = () => {
+            if (spinnerStopped) return;
+            spinnerStopped = true;
+            clearInterval(spinnerTimer);
+            // Clear the current line and restore the cursor. The TUI will
+            // then take over screen control on its first paint.
+            try {
+              stream.write("\r\x1b[2K\x1b[?25h");
+            } catch {
+              // stream may already be closed
+            }
+          };
+
           try {
             pty = ptySpawn(APP_CMD, APP_ARGS, {
               name: term,
@@ -160,6 +203,7 @@ const server = new Server(
               },
             });
           } catch (err) {
+            stopSpinner();
             console.error(`[spawn-error] ${ip}`, err);
             stream.write("failed to start session\r\n");
             stream.exit(1);
@@ -173,7 +217,12 @@ const server = new Server(
             pty?.kill();
           }, SESSION_MAX_MS);
 
+          let firstByte = true;
           pty.onData((data) => {
+            if (firstByte) {
+              firstByte = false;
+              stopSpinner();
+            }
             try {
               stream.write(data);
             } catch {
@@ -191,6 +240,7 @@ const server = new Server(
           });
 
           pty.onExit(({ exitCode }) => {
+            stopSpinner();
             if (idleTimer) clearTimeout(idleTimer);
             if (maxTimer) clearTimeout(maxTimer);
             try {
@@ -202,6 +252,7 @@ const server = new Server(
           });
 
           stream.on("close", () => {
+            stopSpinner();
             if (idleTimer) clearTimeout(idleTimer);
             if (maxTimer) clearTimeout(maxTimer);
             try {
