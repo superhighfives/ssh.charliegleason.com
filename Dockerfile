@@ -1,43 +1,31 @@
-# The SSH wrapper runs on Node (node-pty does not play nicely with Bun's
-# Node compat layer for posix_spawn). The TUI child is launched with Bun,
-# which is what OpenTUI expects.
+# Single-process SSH TUI server. @opentui/ssh accepts the SSH connection
+# and mounts the React tree directly onto a per-session CliRenderer - no
+# child process, no PTY.
 
-FROM node:22-bookworm-slim AS base
+FROM oven/bun:1.3-slim AS base
 
-# Install Bun for the TUI child process, plus build tools for native addons.
-# ncurses-bin provides `tic` and `infocmp`, which Ghostty's ssh-terminfo
-# shell integration uses to upload the xterm-ghostty terminfo entry on
-# connect. Without it, Ghostty users see a hang on
-# "Setting up xterm-ghostty terminfo on ..." until they ^C.
+# tini handles signal forwarding so SIGTERM from Fly cleanly stops the
+# server. ncurses-bin provides `tic` and `infocmp`, which Ghostty's
+# ssh-terminfo shell integration uses to upload the xterm-ghostty terminfo
+# entry on connect.
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    curl \
-    ca-certificates \
-    unzip \
     tini \
-    python3 \
-    make \
-    g++ \
     ncurses-bin \
-    && rm -rf /var/lib/apt/lists/* \
-    && curl -fsSL https://bun.sh/install | bash \
-    && ln -s /root/.bun/bin/bun /usr/local/bin/bun
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
 COPY package.json bun.lock ./
-RUN npm install --omit=dev
+RUN bun install --frozen-lockfile --production
 
 COPY . .
 
 ENV NODE_ENV=production \
     SSH_PORT=2222 \
-    SSH_HOST_KEY_PATH=/data/host_key \
-    APP_CMD=bun \
-    APP_ARGS="src/index.tsx"
+    SSH_HOST_KEY_PATH=/data/host_key
 
 EXPOSE 2222
 
-# tini handles signal forwarding so SIGTERM from Fly cleanly stops the server.
 # The server self-generates a host key into /data on first boot.
 ENTRYPOINT ["/usr/bin/tini", "-s", "--"]
-CMD ["node", "--experimental-strip-types", "src/ssh-server.ts"]
+CMD ["bun", "run", "src/ssh-server.tsx"]

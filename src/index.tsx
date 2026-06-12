@@ -1,9 +1,8 @@
 // src/index.tsx
 
-import { createCliRenderer, type ScrollBoxRenderable } from "@opentui/core";
-import { createRoot, useKeyboard } from "@opentui/react";
+import { type ScrollBoxRenderable } from "@opentui/core";
+import { useKeyboard } from "@opentui/react";
 import { useState, useRef, useEffect } from "react";
-import { exec } from "child_process";
 
 import { menuItems, projects, writing, contact, type MenuItem } from "./data/content";
 import { MainMenu } from "./views/MainMenu";
@@ -15,23 +14,17 @@ import { ContactView } from "./views/ContactView";
 
 type View = "main" | MenuItem;
 
-// In SSH mode, running `open` would launch a browser on the *server*, which
-// is wrong. URLs are already visible next to each item in the lists, so
-// remote users can copy them from the terminal. Locally we still launch the
-// user's default browser.
-const SSH_MODE = process.env.SSH_MODE === "1";
+export type OpenUrl = (url: string) => void;
 
-function openUrl(url: string) {
-  if (SSH_MODE) return;
-
-  const fullUrl = url.startsWith("http") ? url : `https://${url}`;
-  const command = process.platform === "darwin"
-    ? `open "${fullUrl}"`
-    : process.platform === "win32"
-    ? `start "${fullUrl}"`
-    : `xdg-open "${fullUrl}"`;
-  exec(command);
-}
+export type AppProps = {
+  // Close just this session. In SSH mode this ends the SSH channel; in local
+  // dev it terminates the process.
+  onExit: () => void;
+  // How to open a URL. The SSH server passes a no-op (running `open` would
+  // launch a browser on the *server*); local dev passes a real launcher.
+  // URLs are visible next to each list item so remote users can copy them.
+  openUrl?: OpenUrl;
+};
 
 // Approximate number of items visible in scrollable list views
 const VISIBLE_ITEMS = 4;
@@ -42,7 +35,7 @@ const ROWS_PER_ITEM: Record<string, number> = {
   Contact: 4,
 };
 
-function App() {
+export function App({ onExit, openUrl }: AppProps) {
   const [currentView, setCurrentView] = useState<View>("main");
   const [menuIndex, setMenuIndex] = useState(0);
   const [subIndex, setSubIndex] = useState(0);
@@ -50,12 +43,13 @@ function App() {
   const scrollRef = useRef<ScrollBoxRenderable>(null);
 
   const handleOpenUrl = (url: string) => {
-    openUrl(url);
+    openUrl?.(url);
   };
 
   useKeyboard((key) => {
     if (key.name === "q") {
-      process.exit(0);
+      onExit();
+      return;
     }
 
     // Back navigation (works in all sub-views)
@@ -91,11 +85,11 @@ function App() {
       if (key.name === "return") {
         // Open URL for the selected item
         if (currentView === "Projects" && projects[subIndex]) {
-          openUrl(projects[subIndex].url);
+          handleOpenUrl(projects[subIndex].url);
         } else if (currentView === "Writing" && writing[subIndex]) {
-          openUrl(writing[subIndex].url);
+          handleOpenUrl(writing[subIndex].url);
         } else if (currentView === "Contact" && contact[subIndex]) {
-          openUrl(contact[subIndex].url);
+          handleOpenUrl(contact[subIndex].url);
         }
       } else if (key.name === "up") {
         if (subIndex > 0) {
@@ -169,6 +163,3 @@ function App() {
     </box>
   );
 }
-
-const renderer = await createCliRenderer();
-createRoot(renderer).render(<App />);
