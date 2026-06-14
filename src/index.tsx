@@ -47,7 +47,7 @@ export function App({ onExit, openUrl }: AppProps) {
   };
 
   useKeyboard((key) => {
-    if (key.name === "q") {
+    if (key.name === "q" || (key.ctrl && key.name === "c")) {
       onExit();
       return;
     }

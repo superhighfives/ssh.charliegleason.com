@@ -22,4 +22,13 @@ const openUrl: OpenUrl = (url) => {
 };
 
 const renderer = await createCliRenderer();
-createRoot(renderer).render(<App onExit={() => process.exit(0)} openUrl={openUrl} />);
+
+const cleanup = () => {
+  renderer.destroy();
+  process.exit(0);
+};
+
+process.on("SIGINT", cleanup);
+process.on("SIGTERM", cleanup);
+
+createRoot(renderer).render(<App onExit={cleanup} openUrl={openUrl} />);
