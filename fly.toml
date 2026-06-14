@@ -32,7 +32,7 @@ primary_region = 'lhr'
   [services.concurrency]
     type = 'connections'
     hard_limit = 100
-    soft_limit = 50
+    soft_limit = 75
 
   [[services.tcp_checks]]
     interval = '30s'

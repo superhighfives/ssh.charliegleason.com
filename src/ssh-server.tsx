@@ -1,4 +1,4 @@
-// src/ssh-server.ts
+// src/ssh-server.tsx
 //
 // SSH front door for the OpenTUI app.
 // Each session gets a CliRenderer wired straight to the SSH channel; the
