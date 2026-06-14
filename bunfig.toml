@@ -1,0 +1,5 @@
+# Inherits the global ~/.bunfig.toml minimumReleaseAge (7 days), but lets
+# the @opentui/* packages through while the 0.4.x line is brand new. Drop
+# these exclusions once the packages have settled.
+[install]
+minimumReleaseAgeExcludes = ["@opentui/ssh", "@opentui/core", "@opentui/react"]

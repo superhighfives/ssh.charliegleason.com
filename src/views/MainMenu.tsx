@@ -20,11 +20,11 @@ export function MainMenu({ selectedIndex, onNavigate }: MainMenuProps) {
       <box flexDirection="column" width={MAX_WIDTH}>
         {/* Header: Shader + Title */}
         <box flexDirection="row" gap={2} marginBottom={1} alignItems="center">
-          
+
           <AsciiTitle />
         </box>
 
-        <ShaderArt width={MAX_WIDTH} />
+        <ShaderArt type="waves" width={MAX_WIDTH} height={6} />
 
         {/* Main content: Two columns */}
         <box flexDirection="row" flexGrow={1} gap={1}>
