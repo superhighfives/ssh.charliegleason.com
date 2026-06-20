@@ -2,7 +2,7 @@
 
 import { type ScrollBoxRenderable } from "@opentui/core";
 import type { RefObject } from "react";
-import { contact } from "../data/content";
+import { useContent } from "../data/store";
 import { colors } from "../theme";
 import { useLayout } from "../components/useLayout";
 import { ViewHeader } from "../components/ViewHeader";
@@ -14,6 +14,7 @@ type ContactViewProps = {
 
 export function ContactView({ selectedIndex, scrollRef }: ContactViewProps) {
   const { contentWidth, contentHeight } = useLayout();
+  const { contact } = useContent();
   return (
     <box flexDirection="column" padding={1}>
       <box flexDirection="column" width={contentWidth} height={contentHeight}>

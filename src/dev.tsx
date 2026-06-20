@@ -9,6 +9,8 @@ import { createRoot } from "@opentui/react";
 import { exec } from "child_process";
 
 import { App, type OpenUrl } from "./index";
+import { startContentSync } from "./data/store";
+import { startLiveSync } from "./data/live";
 
 const openUrl: OpenUrl = (url) => {
   const fullUrl = url.startsWith("http") ? url : `https://${url}`;
@@ -30,5 +32,9 @@ const cleanup = () => {
 
 process.on("SIGINT", cleanup);
 process.on("SIGTERM", cleanup);
+
+// Same content + live sync as the SSH server, so local dev mirrors production.
+startContentSync();
+startLiveSync();
 
 createRoot(renderer).render(<App onExit={cleanup} openUrl={openUrl} />);

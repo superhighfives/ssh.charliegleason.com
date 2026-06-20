@@ -1,6 +1,7 @@
 // src/views/MainMenu.tsx
 
-import { bio, menuItems } from "../data/content";
+import { menuItems } from "../data/content";
+import { useContent } from "../data/store";
 import { colors } from "../theme";
 import { AsciiTitle } from "../components/AsciiTitle";
 import { ShaderArt } from "../components/ShaderArt";
@@ -51,6 +52,7 @@ function estimateWrappedLines(text: string, width: number): number {
 
 export function MainMenu({ selectedIndex }: MainMenuProps) {
   const { contentWidth, contentHeight, isStacked } = useLayout();
+  const { bio } = useContent();
 
   // Width inside the bio/menu column, used both for the divider rule and for
   // figuring out how many lines the bio text will actually take.
