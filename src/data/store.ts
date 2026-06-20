@@ -85,10 +85,14 @@ export function useContent(): Content {
   return useSyncExternalStore(subscribe, getContent, getContent);
 }
 
-// Drop the protocol and any trailing slash for display, matching the bare-URL
-// style the terminal already uses. Launchers re-add https:// as needed.
+// Drop the scheme (http(s):// or mailto:) and any trailing slash for display,
+// matching the bare-URL style the terminal already uses. Launchers re-derive
+// the scheme as needed (see the dev entry's openUrl).
 function tidyUrl(url: string): string {
-  return url.replace(/^https?:\/\//, "").replace(/\/$/, "");
+  return url
+    .replace(/^mailto:/, "")
+    .replace(/^https?:\/\//, "")
+    .replace(/\/$/, "");
 }
 
 async function fetchJson<T>(path: string): Promise<T> {
@@ -144,7 +148,10 @@ async function refresh(): Promise<void> {
       certifications: data.profile.certifications,
       volunteering: data.profile.volunteering,
       races: data.profile.races,
-      contact: data.profile.contact,
+      contact: data.profile.contact.map((item) => ({
+        ...item,
+        url: tidyUrl(item.url),
+      })),
     };
     emit();
   } catch (err) {
