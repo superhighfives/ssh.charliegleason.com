@@ -33,7 +33,6 @@ export type ShaderType =
   | "bars"
   | "snow"
   | "ripples"
-  | "checker"
   | "waveform"
   | "fountain"
   | "heart"
@@ -603,22 +602,6 @@ export function ripples(c: ShaderConfig): string {
   return lines.join("\n");
 }
 
-export function checker(c: ShaderConfig): string {
-  const { width, height, time } = c;
-  const ox = Math.floor(time * 2) % 4;
-  const oy = Math.floor(time) % 4;
-  const lines: string[] = [];
-  for (let y = 0; y < height; y++) {
-    let line = "";
-    for (let x = 0; x < width; x++) {
-      const a = Math.floor((x + ox) / 4) + Math.floor((y + oy) / 2);
-      line += a % 2 === 0 ? "█" : " ";
-    }
-    lines.push(line);
-  }
-  return lines.join("\n");
-}
-
 export function waveform(c: ShaderConfig): string {
   const { width, height, time } = c;
   const grid: string[][] = Array.from({ length: height }, () => Array(width).fill(" "));
@@ -797,7 +780,6 @@ const stringShaders: Record<ShaderType, (config: ShaderConfig) => string> = {
   bars,
   snow,
   ripples,
-  checker,
   waveform,
   fountain,
   heart,
@@ -910,7 +892,6 @@ const bufferShaders: Record<ShaderType, (fb: OptimizedBuffer, w: number, h: numb
   bars: (fb, w, h, t) => stringShaderToBuffer(bars, fb, w, h, t),
   snow: (fb, w, h, t) => stringShaderToBuffer(snow, fb, w, h, t),
   ripples: (fb, w, h, t) => stringShaderToBuffer(ripples, fb, w, h, t),
-  checker: (fb, w, h, t) => stringShaderToBuffer(checker, fb, w, h, t),
   waveform: (fb, w, h, t) => stringShaderToBuffer(waveform, fb, w, h, t),
   fountain: (fb, w, h, t) => stringShaderToBuffer(fountain, fb, w, h, t),
   heart: (fb, w, h, t) => stringShaderToBuffer(heart, fb, w, h, t),
@@ -953,7 +934,6 @@ export const SHADER_TYPES: ShaderType[] = [
   "bars",
   "snow",
   "ripples",
-  "checker",
   "waveform",
   "fountain",
   "heart",

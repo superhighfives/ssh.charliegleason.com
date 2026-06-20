@@ -1,140 +1,128 @@
 // src/views/MoreView.tsx
 
 import { TextAttributes, type ScrollBoxRenderable } from "@opentui/core";
-import type { RefObject } from "react";
+import type { ReactNode, RefObject } from "react";
 import { awards, talks, education, certifications, volunteering, races } from "../data/content";
 import { colors } from "../theme";
+import { Divider } from "../components/Divider";
+import { useLayout } from "../components/useLayout";
 
 type MoreViewProps = {
-  onBack: () => void;
   scrollRef: RefObject<ScrollBoxRenderable | null>;
 };
 
-const MAX_WIDTH = 80;
-const MAX_HEIGHT = 24;
+// Compact section wrapper. One blank row above the heading and one below it,
+// for every section. Lets us drop ad-hoc marginTop/marginBottom on each block.
+function Section({ title, isFirst, children }: { title: string; isFirst?: boolean; children: ReactNode }) {
+  return (
+    <box flexDirection="column" marginTop={isFirst ? 0 : 2}>
+      <text fg={colors.yellow} content={title} />
+      <box marginBottom={1} />
+      {children}
+    </box>
+  );
+}
 
-export function MoreView({ onBack, scrollRef }: MoreViewProps) {
+// Year-prefixed row: 6-cell year column on the left, content on the right.
+function YearRow({ year, children }: { year: string; children: ReactNode }) {
+  return (
+    <box flexDirection="row">
+      <box width={6}>
+        <text fg={colors.dim} content={year} />
+      </box>
+      <box flexGrow={1} flexDirection="column">
+        {children}
+      </box>
+    </box>
+  );
+}
+
+export function MoreView({ scrollRef }: MoreViewProps) {
+  const { contentWidth, contentHeight } = useLayout();
   return (
     <box flexDirection="column" padding={1}>
-      <box flexDirection="column" width={MAX_WIDTH} height={MAX_HEIGHT}>
-        <text fg={colors.dim} content="← Back (esc)  •  Scroll: ↑/↓" />
-        <box marginTop={2} marginBottom={1}>
+      <box flexDirection="column" width={contentWidth} height={contentHeight}>
+        <text fg={colors.dim} content="← Back (esc)  •  Scroll: ↑/↓ · pgup/pgdn · home/end" />
+        <box marginTop={1}>
           <text fg={colors.yellow} attributes={TextAttributes.BOLD} content="More" />
         </box>
-        <box marginTop={1}>
-          <text fg={colors.border} content="────────────────────────────────────────────────────────────────────────────" />
+        <box marginTop={1} marginBottom={1}>
+          <Divider width={contentWidth} />
         </box>
         <scrollbox ref={scrollRef} flexGrow={1}>
           <box flexDirection="column">
-            {/* Awards */}
-            <box>
-              <text fg={colors.yellow} content="Awards" />
-            </box>
-            <box marginBottom={1} />
-            {awards.map((award, idx) => (
-              <box key={`award-${idx}`} flexDirection="row" gap={2}>
-                <text fg={colors.dim} content={award.year} />
-                <text fg={colors.white} content={award.title} maxWidth={60} />
-              </box>
-            ))}
+            <Section title="Awards" isFirst>
+              {awards.map((award, idx) => (
+                <YearRow key={`award-${idx}`} year={award.year}>
+                  <text fg={colors.white} content={award.title} />
+                </YearRow>
+              ))}
+            </Section>
 
-            {/* Talks */}
-            <box marginTop={2}>
-              <text fg={colors.yellow} content="Talks" />
-            </box>
-            <box marginBottom={1} />
-            {talks.map((talk, idx) => (
-              <box key={`talk-${idx}`} flexDirection="row" gap={2}>
-                <text fg={colors.dim} content={talk.year} />
-                <text fg={colors.white} content={talk.title} maxWidth={60} />
-              </box>
-            ))}
+            <Section title="Talks">
+              {talks.map((talk, idx) => (
+                <YearRow key={`talk-${idx}`} year={talk.year}>
+                  <text fg={colors.white} content={talk.title} />
+                </YearRow>
+              ))}
+            </Section>
 
-            {/* Education */}
-            <box marginTop={2}>
-              <text fg={colors.yellow} content="Education" />
-            </box>
-            <box marginBottom={1} />
-            {education.map((edu, idx) => (
-              <box key={`edu-${idx}`} flexDirection="column" marginBottom={1}>
-                <text fg={colors.white} content={`${edu.degree}${edu.note ? ` (${edu.note})` : ""}`} />
-                <text fg={colors.dim} content={edu.school} />
-                <text fg={colors.dim} content={edu.years} />
-              </box>
-            ))}
+            <Section title="Education">
+              {education.map((edu, idx) => (
+                <box key={`edu-${idx}`} flexDirection="column" marginBottom={idx === education.length - 1 ? 0 : 1}>
+                  <text fg={colors.white} content={`${edu.degree}${edu.note ? ` (${edu.note})` : ""}`} />
+                  <text fg={colors.dim} content={edu.school} />
+                  <text fg={colors.dim} content={edu.years} />
+                </box>
+              ))}
+            </Section>
 
-            {/* Certifications */}
-            <box marginTop={1}>
-              <text fg={colors.yellow} content="Certifications" />
-            </box>
-            <box marginBottom={1} />
-            {certifications.map((cert, idx) => (
-              <box key={`cert-${idx}`} flexDirection="row" gap={2}>
-                <text fg={colors.dim} content={cert.year} />
-                <text fg={colors.white} content={cert.title} />
-              </box>
-            ))}
+            <Section title="Certifications">
+              {certifications.map((cert, idx) => (
+                <YearRow key={`cert-${idx}`} year={cert.year}>
+                  <text fg={colors.white} content={cert.title} />
+                </YearRow>
+              ))}
+            </Section>
 
-            {/* Volunteering */}
-            <box marginTop={2}>
-              <text fg={colors.yellow} content="Volunteering" />
-            </box>
-            <box marginBottom={1} />
-            {volunteering.map((vol, idx) => (
-              <box key={`vol-${idx}`} flexDirection="column" marginBottom={1}>
-                <text fg={colors.white} content={vol.org} />
-                <text fg={colors.dim} content={vol.years} />
-              </box>
-            ))}
+            <Section title="Volunteering">
+              {volunteering.map((vol, idx) => (
+                <box key={`vol-${idx}`} flexDirection="column" marginBottom={idx === volunteering.length - 1 ? 0 : 1}>
+                  <text fg={colors.white} content={vol.org} />
+                  <text fg={colors.dim} content={vol.years} />
+                </box>
+              ))}
+            </Section>
 
-            {/* Triathlons */}
-            <box marginTop={2}>
-              <text fg={colors.yellow} content="Triathlons" />
-            </box>
-            <box marginBottom={1} />
-            {races.triathlons.map((race, idx) => (
-              <box key={`tri-${idx}`} flexDirection="row" gap={2}>
-                <text fg={colors.dim} content={race.year} />
-                <text fg={colors.white} content={race.title} />
-              </box>
-            ))}
+            <Section title="Triathlons">
+              {races.triathlons.map((race, idx) => (
+                <YearRow key={`tri-${idx}`} year={race.year}>
+                  <text fg={colors.white} content={race.title} />
+                </YearRow>
+              ))}
+            </Section>
 
-            {/* Half Marathons */}
-            <box marginTop={2}>
-              <text fg={colors.yellow} content="Half Marathons" />
-            </box>
-            <box marginBottom={1} />
-            {races.halfMarathons.map((race, idx) => (
-              <box key={`half-${idx}`} flexDirection="row" gap={2}>
-                <text fg={colors.dim} content={race.year} />
-                <box flexDirection="column">
+            <Section title="Half Marathons">
+              {races.halfMarathons.map((race, idx) => (
+                <YearRow key={`half-${idx}`} year={race.year}>
                   {race.title.split(",").map((location) => (
                     <text key={location} fg={colors.white} content={location.trim()} />
                   ))}
-                </box>
-              </box>
-            ))}
+                </YearRow>
+              ))}
+            </Section>
 
-            {/* Marathons */}
-            <box marginTop={2}>
-              <text fg={colors.yellow} content="Marathons" />
-            </box>
-            <box marginBottom={1} />
-            {races.marathons.map((race, idx) => (
-              <box key={`marathon-${idx}`} flexDirection="row" gap={2}>
-                <text fg={colors.dim} content={race.year} />
-                <text fg={colors.white} content={race.title} />
-              </box>
-            ))}
+            <Section title="Marathons">
+              {races.marathons.map((race, idx) => (
+                <YearRow key={`marathon-${idx}`} year={race.year}>
+                  <text fg={colors.white} content={race.title} />
+                </YearRow>
+              ))}
+            </Section>
 
-            {/* Ultra Marathons */}
-            <box marginTop={2}>
-              <text fg={colors.yellow} content="Ultra Marathons" />
-            </box>
-            <box marginBottom={1} />
-            <text fg={colors.dim} content="None" />
-
-            <box marginBottom={2} />
+            <Section title="Ultra Marathons">
+              <text fg={colors.dim} content="None" />
+            </Section>
           </box>
         </scrollbox>
       </box>

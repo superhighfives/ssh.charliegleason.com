@@ -172,7 +172,7 @@ export const contact = [
   { label: "Website", url: "charliegleason.com", icon: "🌐", description: "Main portfolio site" },
   { label: "Writing", url: "code.charliegleason.com", icon: "📝", description: "Code and development blog" },
   { label: "GitHub", url: "github.com/superhighfives", icon: "🐙", description: "@superhighfives" },
-  { label: "Twitter", url: "twitter.com/superhighfives", icon: "🐦", description: "@superhighfives" },
+  { label: "X", url: "x.com/superhighfives", icon: "🐦", description: "@superhighfives" },
   { label: "Dribbble", url: "dribbble.com/superhighfives", icon: "🏀", description: "@superhighfives" },
   { label: "Email", url: "hello@charliegleason.com", icon: "📧", description: "Get in touch" },
 ];
