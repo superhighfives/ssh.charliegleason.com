@@ -24,6 +24,9 @@ const OUTER_PADDING = 2;
 // two-column (bio + metadata) layout needs around this many cells to not feel
 // cramped.
 export const STACK_BREAKPOINT = 70;
+// Below this width the help-hint line (Scroll keys, etc.) gets dropped so the
+// title isn't crowded out by it.
+export const COMPACT_BREAKPOINT = 60;
 
 export function useLayout() {
   const { width, height } = useTerminalDimensions();
@@ -33,6 +36,7 @@ export function useLayout() {
     contentWidth: Math.min(PREFERRED_WIDTH, Math.max(0, width - OUTER_PADDING)),
     contentHeight: Math.max(0, height - OUTER_PADDING),
     isStacked: width < STACK_BREAKPOINT,
+    isCompact: width < COMPACT_BREAKPOINT,
     tooSmall: width < MIN_WIDTH || height < MIN_HEIGHT,
   };
 }

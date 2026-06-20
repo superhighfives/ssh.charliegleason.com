@@ -63,6 +63,11 @@ export function ShaderArt({
 		return renderShader(shaderType, { width, height: effectiveHeight, time });
 	}, [shaderType, width, effectiveHeight, time]);
 
+	// `Shader: <name>` is ~13 chars, the hint is ~29. Below ~50 cols they
+	// collide and wrap awkwardly, so hide the right-hand hint on narrow
+	// terminals. Quit/cycle info isn't lost — both keys still work.
+	const showHint = width >= 50;
+
 	return (
 		<box flexDirection="column" width={width}>
 			<text fg={colors.yellow} content={shaderOutput} />
@@ -73,7 +78,9 @@ export function ShaderArt({
 				marginBottom={1}
 			>
 				<text fg={colors.border} content={`Shader: ${shaderType}`} />
-				<text fg={colors.border} content="n to cycle  •  ctrl+c to quit" />
+				{showHint && (
+					<text fg={colors.border} content="n to cycle  •  ctrl+c to quit" />
+				)}
 			</box>
 		</box>
 	);

@@ -1,11 +1,11 @@
 // src/views/MoreView.tsx
 
-import { TextAttributes, type ScrollBoxRenderable } from "@opentui/core";
+import { type ScrollBoxRenderable } from "@opentui/core";
 import type { ReactNode, RefObject } from "react";
 import { awards, talks, education, certifications, volunteering, races } from "../data/content";
 import { colors } from "../theme";
-import { Divider } from "../components/Divider";
 import { useLayout } from "../components/useLayout";
+import { ViewHeader } from "../components/ViewHeader";
 
 type MoreViewProps = {
   scrollRef: RefObject<ScrollBoxRenderable | null>;
@@ -42,13 +42,7 @@ export function MoreView({ scrollRef }: MoreViewProps) {
   return (
     <box flexDirection="column" padding={1}>
       <box flexDirection="column" width={contentWidth} height={contentHeight}>
-        <text fg={colors.dim} content="← Back (esc)  •  Scroll: ↑/↓ · pgup/pgdn · home/end" />
-        <box marginTop={1}>
-          <text fg={colors.yellow} attributes={TextAttributes.BOLD} content="More" />
-        </box>
-        <box marginTop={1} marginBottom={1}>
-          <Divider width={contentWidth} />
-        </box>
+        <ViewHeader title="More" hint="Scroll: ↑/↓ · pgup/pgdn · home/end" />
         <scrollbox ref={scrollRef} flexGrow={1}>
           <box flexDirection="column">
             <Section title="Awards" isFirst>

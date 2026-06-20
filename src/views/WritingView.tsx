@@ -1,11 +1,11 @@
 // src/views/WritingView.tsx
 
-import { TextAttributes, type ScrollBoxRenderable } from "@opentui/core";
+import { type ScrollBoxRenderable } from "@opentui/core";
 import type { RefObject } from "react";
 import { writing } from "../data/content";
 import { colors } from "../theme";
-import { Divider } from "../components/Divider";
 import { useLayout } from "../components/useLayout";
+import { ViewHeader } from "../components/ViewHeader";
 
 type WritingViewProps = {
   selectedIndex: number;
@@ -17,13 +17,7 @@ export function WritingView({ selectedIndex, scrollRef }: WritingViewProps) {
   return (
     <box flexDirection="column" padding={1}>
       <box flexDirection="column" width={contentWidth} height={contentHeight}>
-        <text fg={colors.dim} content="← Back (esc)  •  ↑/↓ · pgup/pgdn · home/end  •  Enter to open" />
-        <box marginTop={1}>
-          <text fg={colors.yellow} attributes={TextAttributes.BOLD} content="Writing" />
-        </box>
-        <box marginTop={1} marginBottom={1}>
-          <Divider width={contentWidth} />
-        </box>
+        <ViewHeader title="Writing" hint="↑/↓ · pgup/pgdn · home/end  •  Enter to open" />
         <scrollbox ref={scrollRef} flexGrow={1}>
           <box flexDirection="column">
             {writing.map((article, index) => {
