@@ -13,8 +13,10 @@ import { type Content, fallbackContent } from "./content";
 // Where to pull content from. Override with CONTENT_API_BASE for local testing
 // (e.g. http://localhost:4321 against `astro dev`). Default is the canonical
 // www host — the apex 301s to it, and WebSockets (see ./live) can't follow that.
-const API_BASE =
-  process.env.CONTENT_API_BASE ?? "https://www.charliegleason.com";
+// Trailing slashes are stripped so path joins don't produce `host//api/...`.
+const API_BASE = (
+  process.env.CONTENT_API_BASE ?? "https://www.charliegleason.com"
+).replace(/\/+$/, "");
 const POSTS_LIMIT = 6;
 
 // ── Shapes returned by the website's APIs ─────────────────────────────────
@@ -95,8 +97,14 @@ async function fetchJson<T>(path: string): Promise<T> {
   return (await res.json()) as T;
 }
 
+// Guard against overlapping runs: if a refresh is slower than the interval, the
+// next tick is skipped rather than racing it (which could let stale data win).
+let refreshing = false;
+
 /** Pull the latest content + posts and publish to the store. */
 async function refresh(): Promise<void> {
+  if (refreshing) return;
+  refreshing = true;
   try {
     const data = await fetchJson<ApiContentResponse>("/api/content");
 
@@ -144,6 +152,8 @@ async function refresh(): Promise<void> {
       "[content] sync failed, keeping last-known-good:",
       err instanceof Error ? err.message : err,
     );
+  } finally {
+    refreshing = false;
   }
 }
 

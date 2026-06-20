@@ -10,9 +10,10 @@
 import { useSyncExternalStore } from "react";
 
 // Derived from the same base as content: https://… -> wss://…
-const WS_BASE = (
-  process.env.CONTENT_API_BASE ?? "https://www.charliegleason.com"
-).replace(/^http/, "ws");
+// Trailing slashes are stripped so path joins don't produce `wss://host//api/...`.
+const WS_BASE = (process.env.CONTENT_API_BASE ?? "https://www.charliegleason.com")
+  .replace(/\/+$/, "")
+  .replace(/^http/, "ws");
 
 export interface NowPlaying {
   name: string;
