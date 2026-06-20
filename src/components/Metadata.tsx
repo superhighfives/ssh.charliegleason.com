@@ -2,11 +2,14 @@
 
 import { useContent } from "../data/store";
 import { useLive } from "../data/live";
+import { useSessionCount } from "../data/sessions";
 import { colors } from "../theme";
 
 export function Metadata() {
   const { metadata } = useContent();
-  const { nowPlaying, visitors } = useLive();
+  const { nowPlaying } = useLive();
+  // Everyone but you. The count includes the current session, so subtract it.
+  const alsoHere = Math.max(0, useSessionCount() - 1);
 
   const nowPlayingLabel =
     nowPlaying && nowPlaying.isNowPlaying
@@ -45,11 +48,12 @@ export function Metadata() {
       </box>
 
       <box flexDirection="column">
-        <text fg={colors.dim} content="Online" />
-        <text
-          fg={colors.white}
-          content={visitors === null ? "—" : String(visitors)}
-        />
+        <text fg={colors.dim} content="Also here" />
+        {alsoHere > 0 ? (
+          <text fg={colors.white} content={String(alsoHere)} />
+        ) : (
+          <text fg={colors.dim} content="Just you" />
+        )}
       </box>
     </box>
   );

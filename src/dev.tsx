@@ -11,6 +11,7 @@ import { exec } from "child_process";
 import { App, type OpenUrl } from "./index";
 import { startContentSync } from "./data/store";
 import { startLiveSync } from "./data/live";
+import { addSession } from "./data/sessions";
 
 const openUrl: OpenUrl = (url) => {
   const fullUrl = url.startsWith("http") ? url : `https://${url}`;
@@ -36,5 +37,7 @@ process.on("SIGTERM", cleanup);
 // Same content + live sync as the SSH server, so local dev mirrors production.
 startContentSync();
 startLiveSync();
+// Count this local viewer as a session ("Just you").
+addSession();
 
 createRoot(renderer).render(<App onExit={cleanup} openUrl={openUrl} />);

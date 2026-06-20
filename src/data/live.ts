@@ -1,10 +1,11 @@
 // src/data/live.ts
 //
-// Live data store. The website pushes now-playing (Last.fm) and the live
-// visitor count over WebSocket from Durable Objects. The SSH process holds one
-// shared connection to each and fans the updates out to every session via
-// `useLive()`. Connections auto-reconnect with backoff; until the first message
-// arrives the values are null and the UI shows a quiet placeholder.
+// Live data store. The website pushes now-playing (Last.fm) over WebSocket from
+// a Durable Object. The SSH process holds one shared connection and fans the
+// updates out to every session via `useLive()`. The connection auto-reconnects
+// with backoff; until the first message arrives the value is null and the UI
+// shows a quiet placeholder. (Concurrent-session presence is tracked locally —
+// see ./sessions — not pulled from the website's visitor counter.)
 
 import { useSyncExternalStore } from "react";
 
@@ -21,10 +22,9 @@ export interface NowPlaying {
 
 export interface LiveState {
   nowPlaying: NowPlaying | null;
-  visitors: number | null;
 }
 
-let current: LiveState = { nowPlaying: null, visitors: null };
+let current: LiveState = { nowPlaying: null };
 const listeners = new Set<() => void>();
 
 function emit() {
@@ -117,13 +117,9 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }
 
-/**
- * Start the live connections. Returns a stop function. Note: the visitor WS
- * counts as one persistent connection on the website's counter — expected and
- * negligible.
- */
+/** Start the now-playing connection. Returns a stop function. */
 export function startLiveSync(): () => void {
-  const stopLastfm = connect("/api/lastfm", (data) => {
+  return connect("/api/lastfm", (data) => {
     if (!isRecord(data) || !isRecord(data.track)) return;
     const track = data.track;
     if (typeof track.name !== "string" || typeof track.artist !== "string") {
@@ -137,15 +133,4 @@ export function startLiveSync(): () => void {
       },
     });
   });
-
-  const stopVisitors = connect("/api/visitors", (data) => {
-    if (isRecord(data) && typeof data.count === "number") {
-      update({ visitors: data.count });
-    }
-  });
-
-  return () => {
-    stopLastfm();
-    stopVisitors();
-  };
 }
