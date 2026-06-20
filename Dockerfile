@@ -5,9 +5,8 @@
 FROM oven/bun:1.3-slim AS base
 
 # tini handles signal forwarding so SIGTERM from Fly cleanly stops the
-# server. ncurses-bin provides `tic` and `infocmp`, which Ghostty's
-# ssh-terminfo shell integration uses to upload the xterm-ghostty terminfo
-# entry on connect.
+# server. ncurses-bin provides `tic` and `infocmp` for compiling any
+# vendored terminfo entries (see vendor/) into the system database.
 RUN apt-get update && apt-get install -y --no-install-recommends \
     tini \
     ncurses-bin \
@@ -24,7 +23,7 @@ ENV NODE_ENV=production \
     SSH_PORT=2222 \
     SSH_HOST_KEY_PATH=/data/host_key
 
-EXPOSE 2222
+EXPOSE 2222 8080
 
 # The server self-generates a host key into /data on first boot.
 ENTRYPOINT ["/usr/bin/tini", "-s", "--"]

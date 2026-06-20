@@ -7,6 +7,7 @@
 import { createServer, logging, type Middleware } from "@opentui/ssh";
 import { createRoot } from "@opentui/react";
 import { App } from "./index";
+import { startRedirectServer } from "./redirect-server";
 
 const HOST_KEY_PATH = process.env.SSH_HOST_KEY_PATH ?? "./host_key";
 const PORT = Number(process.env.SSH_PORT ?? 2222);
@@ -77,6 +78,8 @@ const server = createServer({
 const { host, port, fingerprints } = await server.listen(PORT, BIND);
 console.log(`ssh listening on ${host}:${port}`);
 for (const fp of fingerprints) console.log(`host key: ${fp}`);
+
+startRedirectServer();
 
 const shutdown = async (signal: string) => {
   console.log(`[${signal}] shutting down`);
