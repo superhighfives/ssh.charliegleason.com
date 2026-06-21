@@ -127,7 +127,7 @@ export function MainMenu({ selectedIndex }: MainMenuProps) {
               {/* Match the website: "Listening to" when live, else "Last
                   played"; track + artist emphasised. */}
               <text
-                fg={colors.white}
+                fg={colors.dim}
                 content={t`♪ ${nowPlaying.isNowPlaying ? "Listening to" : "Last played"} ${bold(nowPlaying.name)} by ${bold(nowPlaying.artist)}`}
               />
             </box>
