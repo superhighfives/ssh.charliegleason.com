@@ -120,7 +120,7 @@ export function MainMenu({ selectedIndex }: MainMenuProps) {
               position="absolute"
               // Bottom-left of the shader: the caption row + its margin sit
               // below, so bottom={2} lands the chip on the last shader row.
-              bottom={2}
+              bottom={3}
               left={1}
               backgroundColor={colors.background}
               paddingLeft={1}
