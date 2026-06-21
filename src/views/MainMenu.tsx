@@ -122,7 +122,11 @@ export function MainMenu({ selectedIndex }: MainMenuProps) {
               // below, so bottom={2} lands the chip on the last shader row.
               bottom={3}
               left={1}
-              backgroundColor={colors.background}
+              // Opaque black to clear the shader behind the text (transparent
+              // would let it bleed through the spaces) while blending with the
+              // terminal's own background — the renderer paints nothing, so a
+              // dark terminal shows black here too.
+              backgroundColor="#000000"
               paddingLeft={1}
               paddingRight={1}
             >
