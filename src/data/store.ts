@@ -40,9 +40,16 @@ interface ApiProject {
   url: string;
 }
 
+// /api/content returns each list as a { title, data } section (matching the
+// website's internal model), so the items live under `.data`.
+interface ApiSection<T> {
+  title: string;
+  data: T[];
+}
+
 interface ApiContentResponse {
   profile: ApiProfile;
-  projects: ApiProject[];
+  projects: ApiSection<ApiProject>;
 }
 
 interface ApiPost {
@@ -134,7 +141,7 @@ async function refresh(): Promise<void> {
     current = {
       bio: data.profile.bio,
       metadata: data.profile.metadata,
-      projects: data.projects.map((project) => ({
+      projects: data.projects.data.map((project) => ({
         name: project.title,
         description: project.subtitle,
         url: tidyUrl(project.url),
