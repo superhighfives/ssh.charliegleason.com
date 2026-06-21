@@ -1,6 +1,6 @@
 // src/views/MoreView.tsx
 
-import { type ScrollBoxRenderable } from "@opentui/core";
+import { type ScrollBoxRenderable, TextAttributes } from "@opentui/core";
 import type { ReactNode, RefObject } from "react";
 import { useContent } from "../data/store";
 import { colors } from "../theme";
@@ -16,7 +16,13 @@ type MoreViewProps = {
 function Section({ title, isFirst, children }: { title: string; isFirst?: boolean; children: ReactNode }) {
   return (
     <box flexDirection="column" marginTop={isFirst ? 0 : 2}>
-      <text fg={colors.yellow} content={title} />
+      {/* Bold yellow to match the view titles (ViewHeader) and the rest of the
+          UI's heading treatment. */}
+      <text
+        fg={colors.yellow}
+        attributes={TextAttributes.BOLD}
+        content={title}
+      />
       <box marginBottom={1} />
       {children}
     </box>

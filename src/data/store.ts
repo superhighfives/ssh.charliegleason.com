@@ -17,7 +17,6 @@ import { type Content, fallbackContent } from "./content";
 const API_BASE = (
   process.env.CONTENT_API_BASE ?? "https://www.charliegleason.com"
 ).replace(/\/+$/, "");
-const POSTS_LIMIT = 6;
 
 // ── Shapes returned by the website's APIs ─────────────────────────────────
 
@@ -116,9 +115,8 @@ async function refresh(): Promise<void> {
     // (last-known-good, or the fallback on a cold start) rather than blanking it.
     let writing = current.writing;
     try {
-      const posts = await fetchJson<ApiPostsResponse>(
-        `/api/posts?limit=${POSTS_LIMIT}`,
-      );
+      // Unlike the web homepage's "latest N", the terminal shows everything.
+      const posts = await fetchJson<ApiPostsResponse>("/api/posts?limit=all");
       if (posts.success && posts.posts?.length) {
         writing = posts.posts.map((post) => ({
           title: post.title,
