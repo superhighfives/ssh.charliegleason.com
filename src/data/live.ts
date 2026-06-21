@@ -1,19 +1,20 @@
 // src/data/live.ts
 //
-// Live data store. The website pushes now-playing (Last.fm) over WebSocket from
-// a Durable Object. The SSH process holds one shared connection and fans the
-// updates out to every session via `useLive()`. The connection auto-reconnects
-// with backoff; until the first message arrives the value is null and the UI
-// shows a quiet placeholder. (Concurrent-session presence is tracked locally —
-// see ./sessions — not pulled from the website's visitor counter.)
+// Live data store. The website exposes the current Last.fm track at
+// /api/lastfm — as JSON for a plain GET, or over WebSocket for an upgrade.
+// We poll the JSON over plain HTTPS (Bun's WebSocket client can't complete the
+// upgrade against Cloudflare here, and polling is plenty for a once-a-track
+// readout). One shared poller in the long-lived process fans updates out to
+// every session via `useLive()`. On failure we keep the last-known-good value.
 
 import { useSyncExternalStore } from "react";
 
-// Derived from the same base as content: https://… -> wss://…
-// Trailing slashes are stripped so path joins don't produce `wss://host//api/...`.
-const WS_BASE = (process.env.CONTENT_API_BASE ?? "https://www.charliegleason.com")
-  .replace(/\/+$/, "")
-  .replace(/^http/, "ws");
+const API_BASE = (
+  process.env.CONTENT_API_BASE ?? "https://www.charliegleason.com"
+).replace(/\/+$/, "");
+
+// The tracker polls Last.fm every ~30s; match that so we're never far behind.
+const POLL_INTERVAL_MS = 30_000;
 
 export interface NowPlaying {
   name: string;
@@ -48,90 +49,61 @@ function subscribe(listener: () => void): () => void {
   };
 }
 
-/** Subscribe a component to live data (now-playing + visitor count). */
+/** Subscribe a component to live data (now-playing). */
 export function useLive(): LiveState {
   return useSyncExternalStore(subscribe, getLive, getLive);
 }
 
-const MAX_BACKOFF_MS = 30_000;
-
-// Hold a single auto-reconnecting WebSocket to `path`, handing each parsed JSON
-// message to `onMessage`. Returns a stop function.
-function connect(
-  path: string,
-  onMessage: (data: unknown) => void,
-): () => void {
-  let socket: WebSocket | null = null;
-  let backoff = 1_000;
-  let stopped = false;
-
-  const schedule = () => {
-    if (stopped) return;
-    setTimeout(open, backoff);
-    backoff = Math.min(backoff * 2, MAX_BACKOFF_MS);
-  };
-
-  const open = () => {
-    if (stopped) return;
-    try {
-      socket = new WebSocket(`${WS_BASE}${path}`);
-    } catch {
-      schedule();
-      return;
-    }
-    socket.addEventListener("open", () => {
-      backoff = 1_000;
-    });
-    socket.addEventListener("message", (event) => {
-      if (typeof event.data !== "string") return;
-      try {
-        onMessage(JSON.parse(event.data));
-      } catch {
-        // Ignore malformed frames.
-      }
-    });
-    // A failed connection fires "error" then "close"; reconnect on close only
-    // so we don't schedule twice.
-    socket.addEventListener("close", schedule);
-    socket.addEventListener("error", () => {
-      try {
-        socket?.close();
-      } catch {
-        // already closing
-      }
-    });
-  };
-
-  open();
-
-  return () => {
-    stopped = true;
-    try {
-      socket?.close();
-    } catch {
-      // already closed
-    }
+interface LastFmResponse {
+  track?: {
+    name?: unknown;
+    artist?: unknown;
+    isNowPlaying?: unknown;
   };
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null;
-}
-
-/** Start the now-playing connection. Returns a stop function. */
-export function startLiveSync(): () => void {
-  return connect("/api/lastfm", (data) => {
-    if (!isRecord(data) || !isRecord(data.track)) return;
+async function refresh(): Promise<void> {
+  try {
+    const res = await fetch(`${API_BASE}/api/lastfm`);
+    if (!res.ok) throw new Error(`/api/lastfm -> HTTP ${res.status}`);
+    const data = (await res.json()) as LastFmResponse;
     const track = data.track;
-    if (typeof track.name !== "string" || typeof track.artist !== "string") {
-      return;
+    if (
+      track &&
+      typeof track.name === "string" &&
+      typeof track.artist === "string"
+    ) {
+      update({
+        nowPlaying: {
+          name: track.name,
+          artist: track.artist,
+          isNowPlaying: track.isNowPlaying === true,
+        },
+      });
     }
-    update({
-      nowPlaying: {
-        name: track.name,
-        artist: track.artist,
-        isNowPlaying: track.isNowPlaying === true,
-      },
+  } catch (err) {
+    console.error(
+      "[live] now-playing fetch failed, keeping last-known-good:",
+      err instanceof Error ? err.message : err,
+    );
+  }
+}
+
+let polling = false;
+
+/**
+ * Start polling now-playing. Fetches immediately, then on an interval. Returns
+ * a stop function. Safe to call once at process startup.
+ */
+export function startLiveSync(): () => void {
+  void refresh();
+  const timer = setInterval(() => {
+    if (polling) return;
+    polling = true;
+    void refresh().finally(() => {
+      polling = false;
     });
-  });
+  }, POLL_INTERVAL_MS);
+  timer.unref?.();
+  return () => clearInterval(timer);
 }
