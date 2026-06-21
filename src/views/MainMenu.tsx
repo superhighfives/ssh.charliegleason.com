@@ -1,5 +1,6 @@
 // src/views/MainMenu.tsx
 
+import { bold, t } from "@opentui/core";
 import { menuItems } from "../data/content";
 import { useLive } from "../data/live";
 import { useSessionCount } from "../data/sessions";
@@ -114,7 +115,7 @@ export function MainMenu({ selectedIndex }: MainMenuProps) {
             chromeRows={0}
             type="waves"
           />
-          {nowPlaying?.isNowPlaying && (
+          {nowPlaying && (
             <box
               position="absolute"
               top={1}
@@ -123,9 +124,11 @@ export function MainMenu({ selectedIndex }: MainMenuProps) {
               paddingLeft={1}
               paddingRight={1}
             >
+              {/* Match the website: "Listening to" when live, else "Last
+                  played"; track + artist emphasised. */}
               <text
                 fg={colors.white}
-                content={`♪ ${nowPlaying.name} — ${nowPlaying.artist}`}
+                content={t`♪ ${nowPlaying.isNowPlaying ? "Listening to" : "Last played"} ${bold(nowPlaying.name)} by ${bold(nowPlaying.artist)}`}
               />
             </box>
           )}
