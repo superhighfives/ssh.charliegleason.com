@@ -96,10 +96,10 @@ export function MainMenu({ selectedIndex }: MainMenuProps) {
           flexShrink={0}
         >
           <AsciiTitle />
-          <text
-            fg={colors.dim}
-            content={alsoHere > 0 ? `Also here: ${alsoHere}` : "Just you"}
-          />
+          {/* Only surface presence when someone else is actually connected. */}
+          {alsoHere > 0 && (
+            <text fg={colors.dim} content={`Also here: ${alsoHere}`} />
+          )}
         </box>
 
         {/* Shader, with the now-playing chip overlaid one cell in from the
@@ -118,7 +118,9 @@ export function MainMenu({ selectedIndex }: MainMenuProps) {
           {nowPlaying && (
             <box
               position="absolute"
-              top={1}
+              // Bottom-left of the shader: the caption row + its margin sit
+              // below, so bottom={2} lands the chip on the last shader row.
+              bottom={2}
               left={1}
               backgroundColor={colors.background}
               paddingLeft={1}
