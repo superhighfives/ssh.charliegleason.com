@@ -4,7 +4,8 @@ import { type ScrollBoxRenderable } from "@opentui/core";
 import { useKeyboard } from "@opentui/react";
 import { useState, useRef, useEffect, useMemo } from "react";
 
-import { menuItems, projects, writing, contact, type MenuItem } from "./data/content";
+import { menuItems, type MenuItem } from "./data/content";
+import { useContent } from "./data/store";
 import { MainMenu } from "./views/MainMenu";
 import { AboutView } from "./views/AboutView";
 import { ProjectsView } from "./views/ProjectsView";
@@ -54,13 +55,14 @@ export function App({ onExit, openUrl }: AppProps) {
   const [linkModal, setLinkModal] = useState<LinkItem | null>(null);
   const scrollRef = useRef<ScrollBoxRenderable>(null);
   const { termWidth, termHeight, tooSmall } = useLayout();
+  const { projects, writing, contact } = useContent();
 
   const list: LinkItem[] = useMemo(() => {
     if (currentView === "Projects") return projects.map((p) => ({ title: p.name, url: p.url }));
     if (currentView === "Writing") return writing.map((w) => ({ title: w.title, url: w.url }));
     if (currentView === "Contact") return contact.map((c) => ({ title: c.label, url: c.url }));
     return [];
-  }, [currentView]);
+  }, [currentView, projects, writing, contact]);
 
   const openLink = (item: LinkItem) => {
     if (openUrl) {

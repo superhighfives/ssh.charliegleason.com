@@ -9,6 +9,10 @@ primary_region = 'lhr'
 [build]
 
 [env]
+  # Origin the terminal pulls portfolio content + live data from. Must be the
+  # exact canonical host (no apex→www redirect) since WebSockets don't follow
+  # 301s for the now-playing/visitor connections.
+  CONTENT_API_BASE = 'https://www.charliegleason.com'
   HTTP_PORT = '8080'
   REDIRECT_TARGET = 'https://www.charliegleason.com'
   SSH_IDLE_TIMEOUT_MS = '300000'

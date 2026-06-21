@@ -34,7 +34,6 @@ export type ShaderType =
   | "snow"
   | "ripples"
   | "waveform"
-  | "fountain"
   | "heart"
   | "helix"
   | "swirl"
@@ -615,41 +614,6 @@ export function waveform(c: ShaderConfig): string {
   return grid.map((r) => r.join("")).join("\n");
 }
 
-type FountainPart = Drop & { vy: number };
-let fountainState: { width: number; height: number; parts: FountainPart[] } | null = null;
-export function fountain(c: ShaderConfig): string {
-  const { width, height } = c;
-  if (!fountainState || fountainState.width !== width || fountainState.height !== height) {
-    fountainState = {
-      width,
-      height,
-      parts: Array.from({ length: 60 }, () => ({
-        x: width / 2,
-        y: height,
-        v: (Math.random() - 0.5) * 0.6,
-        vy: -1 - Math.random() * 0.5,
-      })),
-    };
-  }
-  const grid: string[][] = Array.from({ length: height }, () => Array(width).fill(" "));
-  for (const p of fountainState.parts) {
-    p.x += p.v;
-    p.y += p.vy;
-    p.vy += 0.08;
-    if (p.y >= height || p.x < 0 || p.x >= width) {
-      p.x = width / 2 + (Math.random() - 0.5) * 2;
-      p.y = height - 1;
-      p.v = (Math.random() - 0.5) * 0.6;
-      p.vy = -1 - Math.random() * 0.5;
-    }
-    const ix = Math.floor(p.x);
-    const iy = Math.floor(p.y);
-    const row = grid[iy];
-    if (row && ix >= 0 && ix < width) row[ix] = p.vy < 0 ? "•" : "·";
-  }
-  return grid.map((r) => r.join("")).join("\n");
-}
-
 export function heart(c: ShaderConfig): string {
   const { width, height, time } = c;
   const pulse = 1 + Math.sin(time * 3) * 0.1;
@@ -781,7 +745,6 @@ const stringShaders: Record<ShaderType, (config: ShaderConfig) => string> = {
   snow,
   ripples,
   waveform,
-  fountain,
   heart,
   helix,
   swirl,
@@ -893,7 +856,6 @@ const bufferShaders: Record<ShaderType, (fb: OptimizedBuffer, w: number, h: numb
   snow: (fb, w, h, t) => stringShaderToBuffer(snow, fb, w, h, t),
   ripples: (fb, w, h, t) => stringShaderToBuffer(ripples, fb, w, h, t),
   waveform: (fb, w, h, t) => stringShaderToBuffer(waveform, fb, w, h, t),
-  fountain: (fb, w, h, t) => stringShaderToBuffer(fountain, fb, w, h, t),
   heart: (fb, w, h, t) => stringShaderToBuffer(heart, fb, w, h, t),
   helix: (fb, w, h, t) => stringShaderToBuffer(helix, fb, w, h, t),
   swirl: (fb, w, h, t) => stringShaderToBuffer(swirl, fb, w, h, t),
@@ -935,7 +897,6 @@ export const SHADER_TYPES: ShaderType[] = [
   "snow",
   "ripples",
   "waveform",
-  "fountain",
   "heart",
   "helix",
   "swirl",

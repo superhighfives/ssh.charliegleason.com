@@ -7,6 +7,9 @@
 import { createServer, logging, type Middleware } from "@opentui/ssh";
 import { createRoot } from "@opentui/react";
 import { App } from "./index";
+import { startContentSync } from "./data/store";
+import { startLiveSync } from "./data/live";
+import { addSession } from "./data/sessions";
 import { startRedirectServer } from "./redirect-server";
 
 const HOST_KEY_PATH = process.env.SSH_HOST_KEY_PATH ?? "./host_key";
@@ -70,19 +73,30 @@ const server = createServer({
   .use(logging())
   .use(rateLimit)
   .serve((session) => {
+    const removeSession = addSession();
     const root = createRoot(session.renderer);
     root.render(<App onExit={() => session.end()} />);
-    session.onClose(() => root.unmount());
+    session.onClose(() => {
+      removeSession();
+      root.unmount();
+    });
   });
 
 const { host, port, fingerprints } = await server.listen(PORT, BIND);
 console.log(`ssh listening on ${host}:${port}`);
 for (const fp of fingerprints) console.log(`host key: ${fp}`);
 
+// Pull portfolio content + live data from charliegleason.com and keep it fresh.
+// Shared across every session; failures fall back to the bundled content.
+const stopContentSync = startContentSync();
+const stopLiveSync = startLiveSync();
+
 startRedirectServer();
 
 const shutdown = async (signal: string) => {
   console.log(`[${signal}] shutting down`);
+  stopContentSync();
+  stopLiveSync();
   await server.close();
   process.exit(0);
 };

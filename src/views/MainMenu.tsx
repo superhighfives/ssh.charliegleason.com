@@ -1,6 +1,10 @@
 // src/views/MainMenu.tsx
 
-import { bio, menuItems } from "../data/content";
+import { bold, t } from "@opentui/core";
+import { menuItems } from "../data/content";
+import { useLive } from "../data/live";
+import { useSessionCount } from "../data/sessions";
+import { useContent } from "../data/store";
 import { colors } from "../theme";
 import { AsciiTitle } from "../components/AsciiTitle";
 import { ShaderArt } from "../components/ShaderArt";
@@ -51,6 +55,10 @@ function estimateWrappedLines(text: string, width: number): number {
 
 export function MainMenu({ selectedIndex }: MainMenuProps) {
   const { contentWidth, contentHeight, isStacked } = useLayout();
+  const { bio } = useContent();
+  const { nowPlaying } = useLive();
+  // Others in the terminal besides you (the count includes this session).
+  const alsoHere = Math.max(0, useSessionCount() - 1);
 
   // Width inside the bio/menu column, used both for the divider rule and for
   // figuring out how many lines the bio text will actually take.
@@ -78,12 +86,25 @@ export function MainMenu({ selectedIndex }: MainMenuProps) {
           The shader takes whatever rows aren't claimed by the title and the
           bio/menu column below. */}
       <box flexDirection="column" width={contentWidth} height={contentHeight}>
-        {/* Header: Title */}
-        <box flexDirection="row" gap={2} marginBottom={1} alignItems="center" flexShrink={0}>
+        {/* Header: title on the left, live presence on the right, top-aligned
+            so "Also here" sits on the same row as the name. */}
+        <box
+          flexDirection="row"
+          justifyContent="space-between"
+          alignItems="flex-start"
+          marginBottom={1}
+          flexShrink={0}
+        >
           <AsciiTitle />
+          {/* Only surface presence when someone else is actually connected. */}
+          {alsoHere > 0 && (
+            <text fg={colors.dim} content={`Also here: ${alsoHere}`} />
+          )}
         </box>
 
-        <box flexShrink={0}>
+        {/* Shader, with the now-playing chip overlaid one cell in from the
+            top-left corner. position:relative anchors the absolute child. */}
+        <box flexShrink={0} position="relative">
           <ShaderArt
             width={contentWidth}
             height={shaderHeight}
@@ -94,6 +115,25 @@ export function MainMenu({ selectedIndex }: MainMenuProps) {
             chromeRows={0}
             type="waves"
           />
+          {nowPlaying && (
+            <box
+              position="absolute"
+              // Bottom-left of the shader: the caption row + its margin sit
+              // below, so bottom={2} lands the chip on the last shader row.
+              bottom={2}
+              left={1}
+              backgroundColor={colors.background}
+              paddingLeft={1}
+              paddingRight={1}
+            >
+              {/* Match the website: "Listening to" when live, else "Last
+                  played"; track + artist emphasised. */}
+              <text
+                fg={colors.dim}
+                content={t`♪ ${nowPlaying.isNowPlaying ? "Listening to" : "Last played"} ${bold(nowPlaying.name)} by ${bold(nowPlaying.artist)}`}
+              />
+            </box>
+          )}
         </box>
 
         {/* Main content. Two columns when wide enough, single column when not.

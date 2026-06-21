@@ -2,7 +2,7 @@
 
 import { type ScrollBoxRenderable } from "@opentui/core";
 import type { RefObject } from "react";
-import { projects } from "../data/content";
+import { useContent } from "../data/store";
 import { colors } from "../theme";
 import { useLayout } from "../components/useLayout";
 import { ViewHeader } from "../components/ViewHeader";
@@ -14,6 +14,7 @@ type ProjectsViewProps = {
 
 export function ProjectsView({ selectedIndex, scrollRef }: ProjectsViewProps) {
   const { contentWidth, contentHeight } = useLayout();
+  const { projects } = useContent();
   return (
     <box flexDirection="column" padding={1}>
       <box flexDirection="column" width={contentWidth} height={contentHeight}>

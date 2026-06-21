@@ -9,9 +9,18 @@ import { createRoot } from "@opentui/react";
 import { exec } from "child_process";
 
 import { App, type OpenUrl } from "./index";
+import { startContentSync } from "./data/store";
+import { startLiveSync } from "./data/live";
+import { addSession } from "./data/sessions";
 
 const openUrl: OpenUrl = (url) => {
-  const fullUrl = url.startsWith("http") ? url : `https://${url}`;
+  // URLs are stored bare (see store's tidyUrl). Re-derive the scheme: keep an
+  // explicit one if present, treat a bare email as mailto:, else assume https.
+  const fullUrl = /^(https?:|mailto:)/.test(url)
+    ? url
+    : /^[^\s/@]+@[^\s/@]+\.[^\s/@]+$/.test(url)
+      ? `mailto:${url}`
+      : `https://${url}`;
   const command =
     process.platform === "darwin"
       ? `open "${fullUrl}"`
@@ -30,5 +39,11 @@ const cleanup = () => {
 
 process.on("SIGINT", cleanup);
 process.on("SIGTERM", cleanup);
+
+// Same content + live sync as the SSH server, so local dev mirrors production.
+startContentSync();
+startLiveSync();
+// Count this local viewer as a session ("Just you").
+addSession();
 
 createRoot(renderer).render(<App onExit={cleanup} openUrl={openUrl} />);

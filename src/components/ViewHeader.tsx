@@ -19,17 +19,19 @@ type ViewHeaderProps = {
 
 export function ViewHeader({ title, hint }: ViewHeaderProps) {
   const { contentWidth, isCompact } = useLayout();
+  // Layout: Controls / blank / Title / blank / rule / blank / (content follows).
+  // flexShrink={0} keeps each blank row from being collapsed by flex.
   return (
-    <box flexDirection="column">
+    <box flexDirection="column" flexShrink={0}>
       <text
         fg={colors.dim}
         content={isCompact ? "← Back (esc)" : `← Back (esc)  •  ${hint}`}
       />
-      <box height={1} />
+      <box height={1} flexShrink={0} />
       <text fg={colors.yellow} attributes={TextAttributes.BOLD} content={title} />
-      <box height={1} />
+      <box height={1} flexShrink={0} />
       <Divider width={contentWidth} />
-      <box height={1} />
+      <box height={1} flexShrink={0} />
     </box>
   );
 }
