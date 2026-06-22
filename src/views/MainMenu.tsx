@@ -1,6 +1,5 @@
 // src/views/MainMenu.tsx
 
-import { bold, t } from "@opentui/core";
 import { menuItems } from "../data/content";
 import { useLive } from "../data/live";
 import { useSessionCount } from "../data/sessions";
@@ -76,13 +75,10 @@ export function MainMenu({ selectedIndex }: MainMenuProps) {
   const taglineLines = estimateWrappedLines(TAGLINE, contentWidth);
   const titleRows = TITLE_FIXED_ROWS + taglineLines;
 
-  // The now-playing line (when present) takes a single row below the shader
-  // caption and above the columns.
-  const nowPlayingRows = nowPlaying ? 1 : 0;
-
-  // Available rows for the shader = terminal height − everything else.
+  // Available rows for the shader = terminal height − everything else. The
+  // now-playing line shares the shader's caption row, so it costs no extra rows.
   const available =
-    contentHeight - titleRows - SHADER_CAPTION_ROWS - nowPlayingRows - bioColumnRows;
+    contentHeight - titleRows - SHADER_CAPTION_ROWS - bioColumnRows;
   const shaderHeight = Math.max(SHADER_MIN, Math.min(SHADER_MAX, available));
 
   return (
@@ -107,6 +103,8 @@ export function MainMenu({ selectedIndex }: MainMenuProps) {
           )}
         </box>
 
+        {/* The now-playing track rides on the shader's caption row (left side);
+            the shader name + controls sit on the right. */}
         <box flexShrink={0}>
           <ShaderArt
             width={contentWidth}
@@ -117,21 +115,9 @@ export function MainMenu({ selectedIndex }: MainMenuProps) {
             // component's own terminal-based shrinking.
             chromeRows={0}
             type="waves"
+            song={nowPlaying}
           />
         </box>
-
-        {/* Now playing in normal flow below the shader caption — no overlay, so
-            it never crops the shader. Indented two columns to line up with the
-            column content below. Matches the website: "Listening to" when live,
-            else "Last played"; track + artist emphasised. */}
-        {nowPlaying && (
-          <box flexShrink={0} marginLeft={2}>
-            <text
-              fg={colors.dim}
-              content={t`♪ ${nowPlaying.isNowPlaying ? "Listening to" : "Last played"} ${bold(nowPlaying.name)} by ${bold(nowPlaying.artist)}`}
-            />
-          </box>
-        )}
 
         {/* Main content. Two columns when wide enough, single column when not.
             On narrow terminals the metadata moves to the top of the About view

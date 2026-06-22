@@ -1,8 +1,10 @@
 // src/components/ShaderArt.tsx
 // Real-time procedural ASCII shader effects
 
+import { bold, t } from "@opentui/core";
 import { useKeyboard, useTerminalDimensions } from "@opentui/react";
 import { useEffect, useMemo, useState } from "react";
+import type { NowPlaying } from "../data/live";
 import { renderShader, SHADER_TYPES, type ShaderType } from "../shaders";
 import { colors } from "../theme";
 
@@ -20,6 +22,8 @@ interface ShaderArtProps {
 	// out how much vertical space is left for the visual.
 	chromeRows?: number;
 	type?: ShaderType;
+	// Optional now-playing track, shown on the left of the caption row.
+	song?: NowPlaying | null;
 }
 
 export function ShaderArt({
@@ -29,6 +33,7 @@ export function ShaderArt({
   maxHeight = 16,
   chromeRows = 18,
   type,
+  song,
 }: ShaderArtProps) {
 	const startIdx = type ? Math.max(0, SHADER_TYPES.indexOf(type)) : 0;
 	const [shaderIdx, setShaderIdx] = useState(startIdx);
@@ -63,10 +68,25 @@ export function ShaderArt({
 		return renderShader(shaderType, { width, height: effectiveHeight, time });
 	}, [shaderType, width, effectiveHeight, time]);
 
-	// `Shader: <name>` is ~13 chars, the hint is ~29. Below ~50 cols they
-	// collide and wrap awkwardly, so hide the right-hand hint on narrow
-	// terminals. Quit/cycle info isn't lost — both keys still work.
+	// Caption row: song on the left, shader name + controls on the right. Below
+	// ~50 cols the controls hint is dropped (just the shader name remains) so the
+	// song keeps room; the keys still work regardless.
 	const showHint = width >= 50;
+	const shaderName = shaderType.charAt(0).toUpperCase() + shaderType.slice(1);
+	const controls = showHint
+		? `${shaderName} (n to cycle • ctrl+c to quit)`
+		: shaderName;
+
+	const songFull = song
+		? `♪ ${song.isNowPlaying ? "Listening to" : "Last played"} ${song.name} by ${song.artist}`
+		: "";
+	// Reserve room for the controls plus a 2-col gap; truncate the song with an
+	// ellipsis when it won't fit.
+	const songRoom = Math.max(0, width - controls.length - 2);
+	const songTruncated = songFull.length > songRoom;
+	const songClipped = songTruncated
+		? `${songFull.slice(0, Math.max(0, songRoom - 1))}…`
+		: songFull;
 
 	return (
 		<box flexDirection="column" width={width}>
@@ -77,10 +97,15 @@ export function ShaderArt({
 				width={width}
 				marginBottom={1}
 			>
-				<text fg={colors.border} content={`Shader: ${shaderType}`} />
-				{showHint && (
-					<text fg={colors.border} content="n to cycle  •  ctrl+c to quit" />
+				{song && !songTruncated ? (
+					<text
+						fg={colors.dim}
+						content={t`♪ ${song.isNowPlaying ? "Listening to" : "Last played"} ${bold(song.name)} by ${bold(song.artist)}`}
+					/>
+				) : (
+					<text fg={colors.dim} content={songClipped} />
 				)}
+				<text fg={colors.border} content={controls} />
 			</box>
 		</box>
 	);
