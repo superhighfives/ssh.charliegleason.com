@@ -76,8 +76,13 @@ export function MainMenu({ selectedIndex }: MainMenuProps) {
   const taglineLines = estimateWrappedLines(TAGLINE, contentWidth);
   const titleRows = TITLE_FIXED_ROWS + taglineLines;
 
+  // The now-playing line (when present) takes a row plus its margin, below the
+  // shader caption and above the columns.
+  const nowPlayingRows = nowPlaying ? 2 : 0;
+
   // Available rows for the shader = terminal height − everything else.
-  const available = contentHeight - titleRows - SHADER_CAPTION_ROWS - bioColumnRows;
+  const available =
+    contentHeight - titleRows - SHADER_CAPTION_ROWS - nowPlayingRows - bioColumnRows;
   const shaderHeight = Math.max(SHADER_MIN, Math.min(SHADER_MAX, available));
 
   return (
@@ -102,9 +107,7 @@ export function MainMenu({ selectedIndex }: MainMenuProps) {
           )}
         </box>
 
-        {/* Shader, with the now-playing chip overlaid one cell in from the
-            top-left corner. position:relative anchors the absolute child. */}
-        <box flexShrink={0} position="relative">
+        <box flexShrink={0}>
           <ShaderArt
             width={contentWidth}
             height={shaderHeight}
@@ -115,30 +118,20 @@ export function MainMenu({ selectedIndex }: MainMenuProps) {
             chromeRows={0}
             type="waves"
           />
-          {nowPlaying && (
-            <box
-              position="absolute"
-              // Bottom-left of the shader: the caption row + its margin sit
-              // below, so bottom={2} lands the chip on the last shader row.
-              bottom={3}
-              left={1}
-              // Opaque black to clear the shader behind the text (transparent
-              // would let it bleed through the spaces) while blending with the
-              // terminal's own background — the renderer paints nothing, so a
-              // dark terminal shows black here too.
-              backgroundColor="#000000"
-              paddingLeft={1}
-              paddingRight={1}
-            >
-              {/* Match the website: "Listening to" when live, else "Last
-                  played"; track + artist emphasised. */}
-              <text
-                fg={colors.dim}
-                content={t`♪ ${nowPlaying.isNowPlaying ? "Listening to" : "Last played"} ${bold(nowPlaying.name)} by ${bold(nowPlaying.artist)}`}
-              />
-            </box>
-          )}
         </box>
+
+        {/* Now playing in normal flow below the shader caption — no overlay, so
+            it never crops the shader. Indented two columns to line up with the
+            column content below. Matches the website: "Listening to" when live,
+            else "Last played"; track + artist emphasised. */}
+        {nowPlaying && (
+          <box flexShrink={0} marginLeft={2} marginBottom={1}>
+            <text
+              fg={colors.dim}
+              content={t`♪ ${nowPlaying.isNowPlaying ? "Listening to" : "Last played"} ${bold(nowPlaying.name)} by ${bold(nowPlaying.artist)}`}
+            />
+          </box>
+        )}
 
         {/* Main content. Two columns when wide enough, single column when not.
             On narrow terminals the metadata moves to the top of the About view
