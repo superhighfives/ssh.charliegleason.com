@@ -76,9 +76,9 @@ export function MainMenu({ selectedIndex }: MainMenuProps) {
   const taglineLines = estimateWrappedLines(TAGLINE, contentWidth);
   const titleRows = TITLE_FIXED_ROWS + taglineLines;
 
-  // The now-playing line (when present) takes a row plus its margin, below the
-  // shader caption and above the columns.
-  const nowPlayingRows = nowPlaying ? 2 : 0;
+  // The now-playing line (when present) takes a single row below the shader
+  // caption and above the columns.
+  const nowPlayingRows = nowPlaying ? 1 : 0;
 
   // Available rows for the shader = terminal height − everything else.
   const available =
@@ -125,7 +125,7 @@ export function MainMenu({ selectedIndex }: MainMenuProps) {
             column content below. Matches the website: "Listening to" when live,
             else "Last played"; track + artist emphasised. */}
         {nowPlaying && (
-          <box flexShrink={0} marginLeft={2} marginBottom={1}>
+          <box flexShrink={0} marginLeft={2}>
             <text
               fg={colors.dim}
               content={t`♪ ${nowPlaying.isNowPlaying ? "Listening to" : "Last played"} ${bold(nowPlaying.name)} by ${bold(nowPlaying.artist)}`}
