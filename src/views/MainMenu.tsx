@@ -69,7 +69,7 @@ export function MainMenu({ selectedIndex }: MainMenuProps) {
   // margins (2 rows). This is the actual height it'll consume; everything above
   // (title + shader) has to fit in what's left.
   const bioLines = estimateWrappedLines(bio.short, bioInnerWidth);
-  const separatorRows = isStacked ? 2 : 3;
+  const separatorRows = isStacked ? 1 : 3;
   const bioColumnRows =
     COLUMN_CHROME + bioLines + separatorRows + menuItems.length;
 
@@ -135,11 +135,15 @@ export function MainMenu({ selectedIndex }: MainMenuProps) {
             flexGrow={1}
           >
             <text fg={colors.white} wrapMode="word" content={bio.short} />
-            <box marginTop={1} marginBottom={1}>
-              {/* Drop the rule in the stacked layout — it reads as clutter once
-                  the columns collapse to one. */}
-              {!isStacked && <Divider width={bioInnerWidth} />}
-            </box>
+            {/* Stacked: a single blank row, no rule. Wide: the divider with a
+                margin above and below. */}
+            {isStacked ? (
+              <box height={1} flexShrink={0} />
+            ) : (
+              <box marginTop={1} marginBottom={1}>
+                <Divider width={bioInnerWidth} />
+              </box>
+            )}
             <Menu selectedIndex={selectedIndex} />
           </box>
 
