@@ -19,7 +19,11 @@ export function WritingView({ selectedIndex, scrollRef }: WritingViewProps) {
     <box flexDirection="column" padding={1}>
       <box flexDirection="column" width={contentWidth} height={contentHeight}>
         <ViewHeader title="Writing" hint="↑/↓ · pgup/pgdn · home/end  •  Enter to open" />
-        <scrollbox ref={scrollRef} flexGrow={1}>
+        <scrollbox
+          ref={scrollRef}
+          flexGrow={1}
+          contentOptions={{ paddingRight: 1 }}
+        >
           <box flexDirection="column">
             {writing.map((article, index) => {
               const isSelected = index === selectedIndex;

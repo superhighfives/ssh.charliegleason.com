@@ -19,7 +19,11 @@ export function ContactView({ selectedIndex, scrollRef }: ContactViewProps) {
     <box flexDirection="column" padding={1}>
       <box flexDirection="column" width={contentWidth} height={contentHeight}>
         <ViewHeader title="Contact" hint="↑/↓ · pgup/pgdn · home/end  •  Enter to open" />
-        <scrollbox ref={scrollRef} flexGrow={1}>
+        <scrollbox
+          ref={scrollRef}
+          flexGrow={1}
+          contentOptions={{ paddingRight: 1 }}
+        >
           <box flexDirection="column">
             {contact.map((item, index) => {
               const isSelected = index === selectedIndex;

@@ -20,7 +20,11 @@ export function AboutView({ scrollRef }: AboutViewProps) {
     <box flexDirection="column" padding={1}>
       <box flexDirection="column" width={contentWidth} height={contentHeight}>
         <ViewHeader title="About" hint="Scroll: ↑/↓ · pgup/pgdn · home/end" />
-        <scrollbox ref={scrollRef} flexGrow={1}>
+        <scrollbox
+          ref={scrollRef}
+          flexGrow={1}
+          contentOptions={{ paddingRight: 1 }}
+        >
           <box flexDirection="column">
             {/* On narrow terminals the main menu hides its metadata column.
                 Surface it at the top of About so the info is still reachable. */}
