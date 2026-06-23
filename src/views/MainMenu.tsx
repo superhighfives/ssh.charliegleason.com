@@ -6,7 +6,7 @@ import { useSessionCount } from "../data/sessions";
 import { useContent } from "../data/store";
 import { colors } from "../theme";
 import { AsciiTitle } from "../components/AsciiTitle";
-import { ShaderArt } from "../components/ShaderArt";
+import { nowPlayingContent, ShaderArt } from "../components/ShaderArt";
 import { Menu } from "../components/Menu";
 import { Metadata } from "../components/Metadata";
 import { Divider } from "../components/Divider";
@@ -28,7 +28,7 @@ const TITLE_FIXED_ROWS = 2;
 // Shader caption: top margin (1) + the row itself (1) + bottom margin (1).
 const SHADER_CAPTION_ROWS = 3;
 // Compressed shader on the shortest terminals.
-const SHADER_MIN = 3;
+const SHADER_MIN = 2;
 
 // Cheap line-count estimator. Splits on whitespace and greedy-fills each line
 // up to `width` characters — close enough to OpenTUI's word-wrap output for
@@ -51,7 +51,7 @@ function estimateWrappedLines(text: string, width: number): number {
 }
 
 export function MainMenu({ selectedIndex }: MainMenuProps) {
-  const { contentWidth, contentHeight, isStacked } = useLayout();
+  const { contentWidth, contentHeight, isStacked, showShader } = useLayout();
   const { bio } = useContent();
   const { nowPlaying } = useLive();
   // Others in the terminal besides you (the count includes this session).
@@ -107,20 +107,35 @@ export function MainMenu({ selectedIndex }: MainMenuProps) {
         </box>
 
         {/* The now-playing track rides on the shader's caption row (left side);
-            the shader name + controls sit on the right. */}
-        <box flexShrink={0}>
-          <ShaderArt
-            width={contentWidth}
-            height={shaderHeight}
-            minHeight={shaderHeight}
-            maxHeight={shaderHeight}
-            // We've already computed the available height; disable the
-            // component's own terminal-based shrinking.
-            chromeRows={0}
-            type="waves"
-            song={nowPlaying}
-          />
-        </box>
+            the shader name + controls sit on the right. Hidden on short
+            terminals (below SHADER_BREAKPOINT) so the bio/menu box stays fully
+            visible. */}
+        {showShader && (
+          <box flexShrink={0}>
+            <ShaderArt
+              width={contentWidth}
+              height={shaderHeight}
+              minHeight={shaderHeight}
+              maxHeight={shaderHeight}
+              // We've already computed the available height; disable the
+              // component's own terminal-based shrinking.
+              chromeRows={0}
+              type="waves"
+              song={nowPlaying}
+            />
+          </box>
+        )}
+
+        {/* Shader hidden but room for now-playing: render it on its own line so
+            it isn't lost with the shader. */}
+        {!showShader && nowPlaying && (
+          <box flexShrink={0} marginBottom={1}>
+            <text
+              fg={colors.dim}
+              content={nowPlayingContent(nowPlaying, contentWidth)}
+            />
+          </box>
+        )}
 
         {/* Main content. Two columns when wide enough, single column when not.
             On narrow terminals the metadata moves to the top of the About view

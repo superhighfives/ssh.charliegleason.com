@@ -12,10 +12,15 @@ import { useTerminalDimensions } from "@opentui/react";
 // take all available rows so the scroll area fills the window.
 export const PREFERRED_WIDTH = 80;
 
-// Below these we render a "resize me" screen instead of trying to fit. Picked
-// so the menu items + a couple of lines of bio can still fit comfortably.
+// Below these we render a "resize me" screen instead of trying to fit. At
+// MIN_HEIGHT the menu still fits once the shader is dropped (see below).
 export const MIN_WIDTH = 40;
-export const MIN_HEIGHT = 16;
+export const MIN_HEIGHT = 20;
+
+// The main menu shows its shader at/above this height; between MIN_HEIGHT and
+// here the shader is hidden (now-playing still shows) so the bio/menu box stays
+// fully visible.
+export const SHADER_BREAKPOINT = 24;
 
 // Outer padding budget (the `padding={1}` wrapper around every view).
 const OUTER_PADDING = 2;
@@ -37,6 +42,7 @@ export function useLayout() {
     contentHeight: Math.max(0, height - OUTER_PADDING),
     isStacked: width < STACK_BREAKPOINT,
     isCompact: width < COMPACT_BREAKPOINT,
+    showShader: height >= SHADER_BREAKPOINT,
     tooSmall: width < MIN_WIDTH || height < MIN_HEIGHT,
   };
 }

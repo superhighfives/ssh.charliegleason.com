@@ -12,8 +12,9 @@ import { colors } from "../theme";
 // line must be truncated to `room` columns. Walks the segments (plain prefix,
 // bold name, plain " by ", bold artist), taking characters until the budget runs
 // out and appending an ellipsis. bold("") renders nothing, so partial cuts are
-// safe.
-function nowPlayingContent(song: NowPlaying, room: number) {
+// safe. Exported so the main menu can render it standalone when the shader (and
+// its caption) is hidden on short terminals.
+export function nowPlayingContent(song: NowPlaying, room: number) {
 	const head = `♪ ${song.isNowPlaying ? "Listening to" : "Last played"} `;
 	const mid = " by ";
 	if (head.length + song.name.length + mid.length + song.artist.length <= room) {
