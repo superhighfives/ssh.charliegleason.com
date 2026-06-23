@@ -16,11 +16,11 @@ export function TooSmall({ width, height }: TooSmallProps) {
   return (
     <box flexGrow={1} justifyContent="center" alignItems="center" padding={1}>
       <box flexDirection="column" alignItems="center">
-        <text fg={colors.yellow} content="Terminal a bit small." />
+        <text fg={colors.yellow} content="Terminal's a bit small." />
         <text fg={colors.dim} content={`Currently ${width}x${height}.`} />
         <text fg={colors.dim} content={`Resize to ${MIN_WIDTH}x${MIN_HEIGHT} or more.`} />
         <box marginTop={1}>
-          <text fg={colors.dim} content="Or visit charliegleason.com" />
+          <text fg={colors.dim} content="(Or visit charliegleason.com)" />
         </box>
       </box>
     </box>

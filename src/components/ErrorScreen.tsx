@@ -11,10 +11,7 @@ export function ErrorScreen() {
     <box flexGrow={1} justifyContent="center" alignItems="center" padding={1}>
       <box flexDirection="column" alignItems="center">
         <text fg={colors.yellow} content="Couldn't load content." />
-        <text fg={colors.dim} content="Something isn't working." />
-        <box flexDirection="row" marginTop={1}>
-          <text fg={colors.dim} content="Visit charliegleason.com." />
-        </box>
+        <text fg={colors.dim} content="Visit charliegleason.com" />
       </box>
     </box>
   );
