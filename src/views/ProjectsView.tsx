@@ -13,7 +13,7 @@ type ProjectsViewProps = {
 };
 
 export function ProjectsView({ selectedIndex, scrollRef }: ProjectsViewProps) {
-  const { contentWidth, contentHeight } = useLayout();
+  const { contentWidth, contentHeight, isCompact } = useLayout();
   const { projects } = useContent();
   return (
     <box flexDirection="column" padding={1}>
@@ -30,18 +30,40 @@ export function ProjectsView({ selectedIndex, scrollRef }: ProjectsViewProps) {
               const isLast = index === projects.length - 1;
               return (
                 <box key={project.name} flexDirection="column" marginBottom={isLast ? 0 : 1}>
-                  <box flexDirection="row">
-                    <box width={2}>
-                      <text fg={isSelected ? colors.yellow : colors.white} content={isSelected ? "> " : "  "} />
+                  {/* Wide: name and (url) share a row, wrapping as a unit.
+                      Narrow: stack the url on its own line and char-wrap it so a
+                      long URL breaks instead of overflowing the scrollbar. */}
+                  {isCompact ? (
+                    <>
+                      <box flexDirection="row">
+                        <box width={2}>
+                          <text fg={isSelected ? colors.yellow : colors.white} content={isSelected ? "> " : "  "} />
+                        </box>
+                        <box flexGrow={1}>
+                          <text fg={isSelected ? colors.yellow : colors.white} content={project.name} />
+                        </box>
+                      </box>
+                      <box flexDirection="row">
+                        <box width={2} />
+                        <box flexGrow={1}>
+                          <text fg={colors.border} wrapMode="char" content={`(${project.url})`} />
+                        </box>
+                      </box>
+                    </>
+                  ) : (
+                    <box flexDirection="row">
+                      <box width={2}>
+                        <text fg={isSelected ? colors.yellow : colors.white} content={isSelected ? "> " : "  "} />
+                      </box>
+                      <box flexGrow={1} flexDirection="row" flexWrap="wrap">
+                        <text
+                          fg={isSelected ? colors.yellow : colors.white}
+                          content={project.name}
+                        />
+                        <text fg={colors.border} marginLeft={2} content={`(${project.url})`} />
+                      </box>
                     </box>
-                    <box flexGrow={1} flexDirection="row" flexWrap="wrap">
-                      <text
-                        fg={isSelected ? colors.yellow : colors.white}
-                        content={project.name}
-                      />
-                      <text fg={colors.dim} marginLeft={2} content={`(${project.url})`} />
-                    </box>
-                  </box>
+                  )}
                   <box flexDirection="row">
                     <box width={2} />
                     <box flexGrow={1}>

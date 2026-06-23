@@ -30,7 +30,9 @@ export function ViewHeader({ title, hint }: ViewHeaderProps) {
       <box height={1} flexShrink={0} />
       <text fg={colors.yellow} attributes={TextAttributes.BOLD} content={title} />
       <box height={1} flexShrink={0} />
-      <Divider width={contentWidth} />
+      {/* One column short of full width so the rule clears the scrollbar
+          gutter of the content below it. */}
+      <Divider width={contentWidth - 1} />
       <box height={1} flexShrink={0} />
     </box>
   );

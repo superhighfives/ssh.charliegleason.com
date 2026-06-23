@@ -32,7 +32,9 @@ export function AboutView({ scrollRef }: AboutViewProps) {
               <box flexDirection="column" marginBottom={1}>
                 <Metadata />
                 <box marginTop={1}>
-                  <Divider width={contentWidth} />
+                  {/* Inside the scrollbox: clear the scrollbar column and the
+                      content's right padding. */}
+                  <Divider width={contentWidth - 1} />
                 </box>
               </box>
             )}
