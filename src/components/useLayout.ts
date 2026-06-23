@@ -15,7 +15,7 @@ export const PREFERRED_WIDTH = 80;
 // Below these we render a "resize me" screen instead of trying to fit. At
 // MIN_HEIGHT the menu still fits once the shader is dropped (see below).
 export const MIN_WIDTH = 40;
-export const MIN_HEIGHT = 20;
+export const MIN_HEIGHT = 24;
 
 // The main menu shows its shader at/above this height; between MIN_HEIGHT and
 // here the shader is hidden (now-playing still shows) so the bio/menu box stays
