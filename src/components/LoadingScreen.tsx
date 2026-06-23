@@ -32,11 +32,9 @@ export function LoadingScreen() {
       <AsciiTitle />
       {/* Eat the rest of the screen and centre the spinner in it. */}
       <box flexGrow={1} justifyContent="center" alignItems="center">
-        <box flexDirection="column" alignItems="center">
+        <box flexDirection="row">
           <text fg={colors.yellow} content={spinner} />
-          <box marginTop={1}>
-            <text fg={colors.dim} content="Loading" />
-          </box>
+          <text fg={colors.dim} content=" Loading..." />
         </box>
       </box>
     </box>

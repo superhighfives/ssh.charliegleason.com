@@ -15,6 +15,7 @@ import { ContactView } from "./views/ContactView";
 import { UrlModal } from "./components/UrlModal";
 import { TooSmall } from "./components/TooSmall";
 import { LoadingScreen } from "./components/LoadingScreen";
+import { ErrorScreen } from "./components/ErrorScreen";
 import { useLayout } from "./components/useLayout";
 
 type View = "main" | MenuItem;
@@ -196,11 +197,14 @@ export function App({ onExit, openUrl }: AppProps) {
     return <TooSmall width={termWidth} height={termHeight} />;
   }
 
-  // Cold start: nothing fetched yet. Show a sparse full-screen loader. A failed
-  // first fetch (status "error") falls through to the normal app, where each
-  // view's ContentStatusNote explains it rather than spinning forever.
+  // Cold start: nothing fetched yet. Show a sparse full-screen loader, or a
+  // full-screen error if that first fetch failed. Once we've been ready, the
+  // store keeps last-known-good content and never returns to these states.
   if (status === "loading") {
     return <LoadingScreen />;
+  }
+  if (status === "error") {
+    return <ErrorScreen />;
   }
 
   return (

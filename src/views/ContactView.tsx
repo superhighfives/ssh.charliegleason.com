@@ -6,7 +6,6 @@ import { useContent } from "../data/store";
 import { colors } from "../theme";
 import { useLayout } from "../components/useLayout";
 import { ViewHeader } from "../components/ViewHeader";
-import { ContentStatusNote } from "../components/ContentStatusNote";
 
 type ContactViewProps = {
   selectedIndex: number;
@@ -28,7 +27,6 @@ export function ContactView({ selectedIndex, scrollRef }: ContactViewProps) {
           viewportCulling={false}
         >
           <box flexDirection="column">
-            {contact.length === 0 && <ContentStatusNote />}
             {contact.map((item, index) => {
               const isSelected = index === selectedIndex;
               const isLast = index === contact.length - 1;
