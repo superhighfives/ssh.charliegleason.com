@@ -29,8 +29,6 @@ const TITLE_FIXED_ROWS = 2;
 const SHADER_CAPTION_ROWS = 3;
 // Compressed shader on the shortest terminals.
 const SHADER_MIN = 3;
-// Preferred shader height when there's plenty of room.
-const SHADER_MAX = 16;
 
 // Cheap line-count estimator. Splits on whitespace and greedy-fills each line
 // up to `width` characters — close enough to OpenTUI's word-wrap output for
@@ -77,9 +75,10 @@ export function MainMenu({ selectedIndex }: MainMenuProps) {
 
   // Available rows for the shader = terminal height − everything else. The
   // now-playing line shares the shader's caption row, so it costs no extra rows.
+  // No upper cap: the shader fills whatever's left.
   const available =
     contentHeight - titleRows - SHADER_CAPTION_ROWS - bioColumnRows;
-  const shaderHeight = Math.max(SHADER_MIN, Math.min(SHADER_MAX, available));
+  const shaderHeight = Math.max(SHADER_MIN, available);
 
   return (
     <box flexDirection="column" padding={1}>
