@@ -1,9 +1,9 @@
 // src/components/ViewHeader.tsx
 //
-// Shared header for every sub-view: the "← Back" help line, the page title,
-// and the full-width divider. Centralizes spacing so every view looks the
-// same and hides the help line on compact terminals where it'd crowd things
-// out.
+// Shared page template for every sub-view: the brand name, the page title, the
+// "← Back" help line, and the rule below. Centralizes spacing so every view
+// looks the same and hides the help line on compact terminals where it'd crowd
+// things out.
 
 import { TextAttributes } from "@opentui/core";
 import { colors } from "../theme";
@@ -19,16 +19,21 @@ type ViewHeaderProps = {
 
 export function ViewHeader({ title, hint }: ViewHeaderProps) {
   const { contentWidth, isCompact } = useLayout();
-  // Layout: Controls / blank / Title / blank / rule / blank / (content follows).
-  // flexShrink={0} keeps each blank row from being collapsed by flex.
+  // Layout: brand (quiet yellow) / page title (bold) / controls, then a blank,
+  // the rule, a blank, and the content. flexShrink={0} keeps the blank rows from
+  // being collapsed by flex.
   return (
     <box flexDirection="column" flexShrink={0}>
+      <text fg={colors.yellow} content="Charlie Gleason" />
+      <text
+        fg={colors.yellow}
+        attributes={TextAttributes.BOLD}
+        content={title}
+      />
       <text
         fg={colors.dim}
         content={isCompact ? "← Back (esc)" : `← Back (esc)  •  ${hint}`}
       />
-      <box height={1} flexShrink={0} />
-      <text fg={colors.yellow} attributes={TextAttributes.BOLD} content={title} />
       <box height={1} flexShrink={0} />
       {/* One column short of full width so the rule clears the scrollbar
           gutter of the content below it. */}
