@@ -90,20 +90,17 @@ export function MainMenu({ selectedIndex }: MainMenuProps) {
           The shader takes whatever rows aren't claimed by the title and the
           bio/menu column below. */}
       <box flexDirection="column" width={contentWidth} height={contentHeight}>
-        {/* Header: title on the left, live presence on the right, top-aligned
-            so "Also here" sits on the same row as the name. */}
-        <box
-          flexDirection="row"
-          justifyContent="space-between"
-          alignItems="flex-start"
-          marginBottom={1}
-          flexShrink={0}
-        >
-          <AsciiTitle />
-          {/* Only surface presence when someone else is actually connected. */}
-          {alsoHere > 0 && (
-            <text fg={colors.dim} content={`Also here: ${alsoHere}`} />
-          )}
+        {/* Header: title on the left; live presence pinned opposite the name
+            (the tagline below keeps full width). Only surfaced when someone
+            else is actually connected. */}
+        <box flexDirection="column" marginBottom={1} flexShrink={0}>
+          <AsciiTitle
+            aside={
+              alsoHere > 0 ? (
+                <text fg={colors.dim} content={`Also here: ${alsoHere}`} />
+              ) : undefined
+            }
+          />
         </box>
 
         {/* The now-playing track rides on the shader's caption row (left side);
