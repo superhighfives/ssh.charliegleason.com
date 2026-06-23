@@ -5,7 +5,7 @@
 // looks the same and hides the help line on compact terminals where it'd crowd
 // things out.
 
-import { TextAttributes } from "@opentui/core";
+import { bold, t } from "@opentui/core";
 import { colors } from "../theme";
 import { Divider } from "./Divider";
 import { useLayout } from "./useLayout";
@@ -19,17 +19,12 @@ type ViewHeaderProps = {
 
 export function ViewHeader({ title, hint }: ViewHeaderProps) {
   const { contentWidth, isCompact } = useLayout();
-  // Layout: brand (quiet yellow) / page title (bold) / controls, then a blank,
-  // the rule, a blank, and the content. flexShrink={0} keeps the blank rows from
-  // being collapsed by flex.
+  // Layout: "brand / page title" (brand quiet, title bold) / controls, then a
+  // blank, the rule, a blank, and the content. flexShrink={0} keeps the blank
+  // rows from being collapsed by flex.
   return (
     <box flexDirection="column" flexShrink={0}>
-      <text fg={colors.yellow} content="Charlie Gleason" />
-      <text
-        fg={colors.yellow}
-        attributes={TextAttributes.BOLD}
-        content={title}
-      />
+      <text fg={colors.yellow} content={t`Charlie Gleason / ${bold(title)}`} />
       <text
         fg={colors.dim}
         content={isCompact ? "← Back (esc)" : `← Back (esc)  •  ${hint}`}
