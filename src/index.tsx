@@ -5,7 +5,7 @@ import { useKeyboard } from "@opentui/react";
 import { useState, useRef, useEffect, useMemo } from "react";
 
 import { menuItems, type MenuItem } from "./data/content";
-import { useContent } from "./data/store";
+import { useContent, useContentStatus } from "./data/store";
 import { MainMenu } from "./views/MainMenu";
 import { AboutView } from "./views/AboutView";
 import { ProjectsView } from "./views/ProjectsView";
@@ -14,6 +14,7 @@ import { MoreView } from "./views/MoreView";
 import { ContactView } from "./views/ContactView";
 import { UrlModal } from "./components/UrlModal";
 import { TooSmall } from "./components/TooSmall";
+import { LoadingScreen } from "./components/LoadingScreen";
 import { useLayout } from "./components/useLayout";
 
 type View = "main" | MenuItem;
@@ -48,6 +49,7 @@ export function App({ onExit, openUrl }: AppProps) {
   const scrollRef = useRef<ScrollBoxRenderable>(null);
   const { termWidth, termHeight, tooSmall } = useLayout();
   const { projects, writing, contact } = useContent();
+  const status = useContentStatus();
 
   const list: LinkItem[] = useMemo(() => {
     if (currentView === "Projects") return projects.map((p) => ({ title: p.name, url: p.url }));
@@ -192,6 +194,13 @@ export function App({ onExit, openUrl }: AppProps) {
 
   if (tooSmall) {
     return <TooSmall width={termWidth} height={termHeight} />;
+  }
+
+  // Cold start: nothing fetched yet. Show a sparse full-screen loader. A failed
+  // first fetch (status "error") falls through to the normal app, where each
+  // view's ContentStatusNote explains it rather than spinning forever.
+  if (status === "loading") {
+    return <LoadingScreen />;
   }
 
   return (
