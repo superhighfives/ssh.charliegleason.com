@@ -110,6 +110,7 @@ export function ShaderArt({
 				flexDirection="row"
 				justifyContent="space-between"
 				width={width}
+				marginTop={1}
 				marginBottom={1}
 			>
 				<text

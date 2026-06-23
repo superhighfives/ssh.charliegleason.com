@@ -25,8 +25,8 @@ const COLUMN_CHROME = 4;
 const TAGLINE = "Designer, developer, creative coder, and musician.";
 // Rows that aren't the tagline: the bold name (1) + bottom margin (1).
 const TITLE_FIXED_ROWS = 2;
-// Shader caption: the row itself (1) + bottom margin (1).
-const SHADER_CAPTION_ROWS = 2;
+// Shader caption: top margin (1) + the row itself (1) + bottom margin (1).
+const SHADER_CAPTION_ROWS = 3;
 // Compressed shader on the shortest terminals.
 const SHADER_MIN = 3;
 // Preferred shader height when there's plenty of room.
