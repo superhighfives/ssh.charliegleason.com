@@ -195,7 +195,16 @@ export function App({ onExit, openUrl }: AppProps) {
   }
 
   return (
-    <box flexGrow={1} alignItems="center">
+    // Keying on the terminal size remounts the content on resize, forcing the
+    // renderer to drop and redraw every renderable. Without this, shrinking the
+    // terminal can leave a stale frame (e.g. the bio box border drawn at the old
+    // width) until a full subtree swap happens. App state lives above this box,
+    // so the current view and selection survive the remount.
+    <box
+      key={`${termWidth}x${termHeight}`}
+      flexGrow={1}
+      alignItems="center"
+    >
       {currentView === "main" && <MainMenu selectedIndex={menuIndex} />}
       {currentView === "About" && <AboutView scrollRef={scrollRef} />}
       {currentView === "Projects" && (
