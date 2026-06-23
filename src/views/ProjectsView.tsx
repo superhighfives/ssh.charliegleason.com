@@ -6,6 +6,7 @@ import { useContent } from "../data/store";
 import { colors } from "../theme";
 import { useLayout } from "../components/useLayout";
 import { ViewHeader } from "../components/ViewHeader";
+import { ContentStatusNote } from "../components/ContentStatusNote";
 
 type ProjectsViewProps = {
   selectedIndex: number;
@@ -27,6 +28,7 @@ export function ProjectsView({ selectedIndex, scrollRef }: ProjectsViewProps) {
           viewportCulling={false}
         >
           <box flexDirection="column">
+            {projects.length === 0 && <ContentStatusNote />}
             {projects.map((project, index) => {
               const isSelected = index === selectedIndex;
               const isLast = index === projects.length - 1;

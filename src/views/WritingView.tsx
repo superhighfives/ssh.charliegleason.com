@@ -6,6 +6,7 @@ import { useContent } from "../data/store";
 import { colors } from "../theme";
 import { useLayout } from "../components/useLayout";
 import { ViewHeader } from "../components/ViewHeader";
+import { ContentStatusNote } from "../components/ContentStatusNote";
 
 type WritingViewProps = {
   selectedIndex: number;
@@ -27,6 +28,7 @@ export function WritingView({ selectedIndex, scrollRef }: WritingViewProps) {
           viewportCulling={false}
         >
           <box flexDirection="column">
+            {writing.length === 0 && <ContentStatusNote />}
             {writing.map((article, index) => {
               const isSelected = index === selectedIndex;
               const isLast = index === writing.length - 1;

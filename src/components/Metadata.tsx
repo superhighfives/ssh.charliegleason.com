@@ -2,9 +2,14 @@
 
 import { useContent } from "../data/store";
 import { colors } from "../theme";
+import { ContentStatusNote } from "./ContentStatusNote";
 
 export function Metadata() {
   const { metadata } = useContent();
+
+  // No metadata yet (cold start / failed first fetch) — show the load status
+  // rather than a column of empty labels.
+  if (!metadata.website) return <ContentStatusNote />;
 
   return (
     <box flexDirection="column">

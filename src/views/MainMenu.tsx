@@ -11,6 +11,7 @@ import { Menu } from "../components/Menu";
 import { Metadata } from "../components/Metadata";
 import { Divider } from "../components/Divider";
 import { useLayout } from "../components/useLayout";
+import { ContentStatusNote } from "../components/ContentStatusNote";
 
 type MainMenuProps = {
   selectedIndex: number;
@@ -149,7 +150,11 @@ export function MainMenu({ selectedIndex }: MainMenuProps) {
             padding={1}
             flexGrow={1}
           >
-            <text fg={colors.white} wrapMode="word" content={bio.short} />
+            {bio.short ? (
+              <text fg={colors.white} wrapMode="word" content={bio.short} />
+            ) : (
+              <ContentStatusNote />
+            )}
             {/* Stacked: a single blank row, no rule. Wide: the divider with a
                 margin above and below. */}
             {isStacked ? (

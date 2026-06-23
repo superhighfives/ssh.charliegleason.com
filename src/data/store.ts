@@ -68,7 +68,14 @@ interface ApiPostsResponse {
 
 // ── Singleton store ───────────────────────────────────────────────────────
 
+// loading: the first fetch hasn't resolved yet (cold start, empty content).
+// ready:   at least one fetch has succeeded; `current` is real content.
+// error:   the *first* fetch failed, so we have nothing to show. Once we've been
+//          ready, later failures keep last-known-good and stay "ready".
+export type ContentStatus = "loading" | "ready" | "error";
+
 let current: Content = emptyContent;
+let status: ContentStatus = "loading";
 const listeners = new Set<() => void>();
 
 function emit() {
@@ -77,6 +84,10 @@ function emit() {
 
 export function getContent(): Content {
   return current;
+}
+
+export function getStatus(): ContentStatus {
+  return status;
 }
 
 function subscribe(listener: () => void): () => void {
@@ -89,6 +100,11 @@ function subscribe(listener: () => void): () => void {
 /** Subscribe a component to the shared content. Re-renders on every refresh. */
 export function useContent(): Content {
   return useSyncExternalStore(subscribe, getContent, getContent);
+}
+
+/** Subscribe a component to the load status (loading → ready/error). */
+export function useContentStatus(): ContentStatus {
+  return useSyncExternalStore(subscribe, getStatus, getStatus);
 }
 
 // Drop the scheme (http(s):// or mailto:) and any trailing slash for display,
@@ -158,12 +174,19 @@ async function refresh(): Promise<void> {
         url: tidyUrl(item.url),
       })),
     };
+    status = "ready";
     emit();
   } catch (err) {
     console.error(
       "[content] sync failed, keeping last-known-good:",
       err instanceof Error ? err.message : err,
     );
+    // Surface an error only on a cold start (nothing to show yet). If we've
+    // already been ready, keep the last-known-good content and status.
+    if (status === "loading") {
+      status = "error";
+      emit();
+    }
   } finally {
     refreshing = false;
   }

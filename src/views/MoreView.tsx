@@ -6,6 +6,7 @@ import { useContent } from "../data/store";
 import { colors } from "../theme";
 import { useLayout } from "../components/useLayout";
 import { ViewHeader } from "../components/ViewHeader";
+import { ContentStatusNote } from "../components/ContentStatusNote";
 
 type MoreViewProps = {
   scrollRef: RefObject<ScrollBoxRenderable | null>;
@@ -41,6 +42,9 @@ export function MoreView({ scrollRef }: MoreViewProps) {
   const { contentWidth, contentHeight } = useLayout();
   const { awards, talks, education, certifications, volunteering, races } =
     useContent();
+  // Every section draws from the same fetch, so if awards is empty we have no
+  // profile data yet — show the load status instead of a wall of empty headings.
+  const hasContent = awards.length > 0;
   return (
     <box flexDirection="column" padding={1}>
       <box flexDirection="column" width={contentWidth} height={contentHeight}>
@@ -51,6 +55,9 @@ export function MoreView({ scrollRef }: MoreViewProps) {
           contentOptions={{ paddingRight: 1 }}
         >
           <box flexDirection="column">
+            {!hasContent && <ContentStatusNote />}
+            {hasContent && (
+              <>
             <Section title="Awards" isFirst>
               {awards.map((award, idx) => (
                 <YearRow key={`award-${idx}`} year={award.year}>
@@ -123,6 +130,8 @@ export function MoreView({ scrollRef }: MoreViewProps) {
             <Section title="Ultra Marathons">
               <text fg={colors.dim} content="None" />
             </Section>
+              </>
+            )}
           </box>
         </scrollbox>
       </box>
