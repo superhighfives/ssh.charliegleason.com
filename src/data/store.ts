@@ -4,11 +4,11 @@
 // portfolio content from charliegleason.com once into a module-level singleton
 // and share it across every connected session. A periodic refresh keeps the
 // terminal in sync with the website without a redeploy; on any failure we keep
-// the last-known-good value (falling back to the build-time content on a cold
-// start). Components subscribe via `useContent()`.
+// the last-known-good value (empty content on a cold start — there is no
+// build-time fallback). Components subscribe via `useContent()`.
 
 import { useSyncExternalStore } from "react";
-import { type Content, fallbackContent } from "./content";
+import { type Content, emptyContent } from "./content";
 
 // Where to pull content from. Override with CONTENT_API_BASE for local testing
 // (e.g. http://localhost:4321 against `astro dev`). Default is the canonical
@@ -68,7 +68,7 @@ interface ApiPostsResponse {
 
 // ── Singleton store ───────────────────────────────────────────────────────
 
-let current: Content = fallbackContent;
+let current: Content = emptyContent;
 const listeners = new Set<() => void>();
 
 function emit() {
@@ -119,7 +119,7 @@ async function refresh(): Promise<void> {
     const data = await fetchJson<ApiContentResponse>("/api/content");
 
     // Posts are best-effort: if they fail we keep whatever writing list we have
-    // (last-known-good, or the fallback on a cold start) rather than blanking it.
+    // (last-known-good, or empty on a cold start) rather than blanking it.
     let writing = current.writing;
     try {
       // Unlike the web homepage's "latest N", the terminal shows everything.
