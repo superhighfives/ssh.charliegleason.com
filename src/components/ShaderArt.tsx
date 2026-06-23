@@ -97,9 +97,7 @@ export function ShaderArt({
 	// song keeps room; the keys still work regardless.
 	const showHint = width >= 50;
 	const shaderName = shaderType.charAt(0).toUpperCase() + shaderType.slice(1);
-	const controls = showHint
-		? `${shaderName} (n to cycle • ctrl+c to quit)`
-		: shaderName;
+	const controls = showHint ? `${shaderName} (n to cycle)` : shaderName;
 
 	// Reserve room for the controls plus a 2-col gap; the song truncates (with an
 	// ellipsis, keeping track/artist bold) into whatever's left.
