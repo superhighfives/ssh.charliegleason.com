@@ -63,11 +63,15 @@ export function MainMenu({ selectedIndex }: MainMenuProps) {
     ? contentWidth - COLUMN_CHROME
     : contentWidth - METADATA_COLUMN_WIDTH - 1 - COLUMN_CHROME;
 
-  // The bio/menu column needs: border+padding (4) + bio wrap lines + divider
-  // row + 2 row margins around it + every menu item. This is the actual height
-  // it'll consume; everything above (title + shader) has to fit in what's left.
+  // The bio/menu column needs: border+padding (4) + bio wrap lines + the
+  // separator + every menu item. The separator is the divider plus its two
+  // margins when wide (3 rows); when stacked we drop the rule and keep just the
+  // margins (2 rows). This is the actual height it'll consume; everything above
+  // (title + shader) has to fit in what's left.
   const bioLines = estimateWrappedLines(bio.short, bioInnerWidth);
-  const bioColumnRows = COLUMN_CHROME + bioLines + 1 /*divider*/ + 2 /*margins*/ + menuItems.length;
+  const separatorRows = isStacked ? 2 : 3;
+  const bioColumnRows =
+    COLUMN_CHROME + bioLines + separatorRows + menuItems.length;
 
   // Title takes the bold name plus however many lines the tagline wraps to.
   const taglineLines = estimateWrappedLines(TAGLINE, contentWidth);
@@ -132,7 +136,9 @@ export function MainMenu({ selectedIndex }: MainMenuProps) {
           >
             <text fg={colors.white} wrapMode="word" content={bio.short} />
             <box marginTop={1} marginBottom={1}>
-              <Divider width={bioInnerWidth} />
+              {/* Drop the rule in the stacked layout — it reads as clutter once
+                  the columns collapse to one. */}
+              {!isStacked && <Divider width={bioInnerWidth} />}
             </box>
             <Menu selectedIndex={selectedIndex} />
           </box>
