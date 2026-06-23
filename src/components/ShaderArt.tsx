@@ -8,6 +8,30 @@ import type { NowPlaying } from "../data/live";
 import { renderShader, SHADER_TYPES, type ShaderType } from "../shaders";
 import { colors } from "../theme";
 
+// Build the now-playing caption, keeping the track and artist bold even when the
+// line must be truncated to `room` columns. Walks the segments (plain prefix,
+// bold name, plain " by ", bold artist), taking characters until the budget runs
+// out and appending an ellipsis. bold("") renders nothing, so partial cuts are
+// safe.
+function nowPlayingContent(song: NowPlaying, room: number) {
+	const head = `♪ ${song.isNowPlaying ? "Listening to" : "Last played"} `;
+	const mid = " by ";
+	if (head.length + song.name.length + mid.length + song.artist.length <= room) {
+		return t`${head}${bold(song.name)}${mid}${bold(song.artist)}`;
+	}
+	let budget = Math.max(0, room - 1); // leave a column for the ellipsis
+	const take = (s: string) => {
+		const part = s.slice(0, budget);
+		budget -= part.length;
+		return part;
+	};
+	const h = take(head);
+	const n = take(song.name);
+	const m = take(mid);
+	const a = take(song.artist);
+	return t`${h}${bold(n)}${m}${bold(a)}…`;
+}
+
 interface ShaderArtProps {
 	width?: number;
 	// Preferred height. Used when the terminal is comfortably tall.
@@ -77,16 +101,9 @@ export function ShaderArt({
 		? `${shaderName} (n to cycle • ctrl+c to quit)`
 		: shaderName;
 
-	const songFull = song
-		? `♪ ${song.isNowPlaying ? "Listening to" : "Last played"} ${song.name} by ${song.artist}`
-		: "";
-	// Reserve room for the controls plus a 2-col gap; truncate the song with an
-	// ellipsis when it won't fit.
+	// Reserve room for the controls plus a 2-col gap; the song truncates (with an
+	// ellipsis, keeping track/artist bold) into whatever's left.
 	const songRoom = Math.max(0, width - controls.length - 2);
-	const songTruncated = songFull.length > songRoom;
-	const songClipped = songTruncated
-		? `${songFull.slice(0, Math.max(0, songRoom - 1))}…`
-		: songFull;
 
 	return (
 		<box flexDirection="column" width={width}>
@@ -97,14 +114,10 @@ export function ShaderArt({
 				width={width}
 				marginBottom={1}
 			>
-				{song && !songTruncated ? (
-					<text
-						fg={colors.dim}
-						content={t`♪ ${song.isNowPlaying ? "Listening to" : "Last played"} ${bold(song.name)} by ${bold(song.artist)}`}
-					/>
-				) : (
-					<text fg={colors.dim} content={songClipped} />
-				)}
+				<text
+					fg={colors.dim}
+					content={song ? nowPlayingContent(song, songRoom) : ""}
+				/>
 				<text fg={colors.border} content={controls} />
 			</box>
 		</box>
