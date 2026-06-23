@@ -23,6 +23,8 @@ export function ProjectsView({ selectedIndex, scrollRef }: ProjectsViewProps) {
           ref={scrollRef}
           flexGrow={1}
           contentOptions={{ paddingRight: 1 }}
+          // Keep every item laid out so selection-scroll can read real offsets.
+          viewportCulling={false}
         >
           <box flexDirection="column">
             {projects.map((project, index) => {

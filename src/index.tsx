@@ -30,15 +30,8 @@ export type AppProps = {
   openUrl?: OpenUrl;
 };
 
-// Approximate number of items visible in the list views before scrolling kicks
-// in. PageUp/PageDown jump by this many items.
+// PageUp/PageDown jump by this many items.
 const VISIBLE_ITEMS = 4;
-// Rows per item in each list view, used for scroll math.
-const ROWS_PER_ITEM: Record<string, number> = {
-  Projects: 3,
-  Writing: 3,
-  Contact: 4,
-};
 
 // How far PageUp/PageDown move the scroll views (About, More). Roughly one
 // terminal page of body content.
@@ -51,7 +44,6 @@ export function App({ onExit, openUrl }: AppProps) {
   const [currentView, setCurrentView] = useState<View>("main");
   const [menuIndex, setMenuIndex] = useState(0);
   const [subIndex, setSubIndex] = useState(0);
-  const [visibleStart, setVisibleStart] = useState(0);
   const [linkModal, setLinkModal] = useState<LinkItem | null>(null);
   const scrollRef = useRef<ScrollBoxRenderable>(null);
   const { termWidth, termHeight, tooSmall } = useLayout();
@@ -73,24 +65,27 @@ export function App({ onExit, openUrl }: AppProps) {
     setLinkModal(item);
   };
 
-  // Move the list selection to a new index, scrolling the viewport so the
-  // selection stays visible.
+  // Move the list selection, then scroll the viewport by the selected item's
+  // actual measured offset so it stays visible and the scrollbar stays in sync.
+  // (Items have variable heights as descriptions/URLs wrap, so a fixed per-item
+  // estimate drifts; the list scrollboxes disable viewport culling so every
+  // item's position is readable.)
   const moveSelection = (newIndex: number) => {
     const clamped = Math.max(0, Math.min(list.length - 1, newIndex));
-    const rowsPerItem = ROWS_PER_ITEM[currentView] ?? 3;
-
-    let newStart = visibleStart;
-    if (clamped < newStart) {
-      newStart = clamped;
-    } else if (clamped >= newStart + VISIBLE_ITEMS) {
-      newStart = clamped - VISIBLE_ITEMS + 1;
-    }
-
-    if (newStart !== visibleStart) {
-      setVisibleStart(newStart);
-      scrollRef.current?.scrollTo(newStart * rowsPerItem);
-    }
     setSubIndex(clamped);
+
+    const sb = scrollRef.current;
+    const items = sb?.content?.getChildren()[0]?.getChildren() ?? [];
+    const item = items[clamped];
+    const first = items[0];
+    if (!sb || !item || !first) return;
+
+    const top = item.y - first.y;
+    const bottom = top + item.height;
+    const viewHeight = sb.viewport.height;
+    const scrollTop = sb.scrollTop;
+    if (top < scrollTop) sb.scrollTo(top);
+    else if (bottom > scrollTop + viewHeight) sb.scrollTo(bottom - viewHeight);
   };
 
   useKeyboard((key) => {
@@ -153,7 +148,6 @@ export function App({ onExit, openUrl }: AppProps) {
         const selectedItem = menuItems[menuIndex];
         if (selectedItem) {
           setSubIndex(0);
-          setVisibleStart(0);
           setCurrentView(selectedItem);
         }
       }
