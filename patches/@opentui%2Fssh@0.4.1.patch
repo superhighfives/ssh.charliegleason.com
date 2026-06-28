@@ -1,0 +1,32 @@
+diff --git a/node_modules/@opentui/ssh/.bun-tag-34121a6a41f75708 b/.bun-tag-34121a6a41f75708
+new file mode 100644
+index 0000000000000000000000000000000000000000..e69de29bb2d1d6434b8b29ae775ad8c2e48c5391
+diff --git a/index.js b/index.js
+index a9212b248ab04f0ae8f04baeeec4df37374c4ea3..1eb8f7b4ae82236f4791e6b3dc44ef482b36726f 100644
+--- a/index.js
++++ b/index.js
+@@ -577,6 +577,24 @@ function createConnectionHandler(dependencies) {
+           accept?.();
+           activeBridge?.resize(info2.cols, info2.rows);
+         });
++        sshSession.on("exec", (accept, reject, info2) => {
++          // Ghostty's ssh-terminfo integration probes the remote with
++          // `infocmp xterm-ghostty` and uploads via `tic -x -`, both as exec
++          // channels. @opentui/ssh registers no exec handler, so ssh2 rejects
++          // them — clean for a plain `ssh host cmd` (it fails fast with "exec
++          // request failed"), but Ghostty's `+ssh` wrapper mishandles the
++          // rejection and stalls on "Setting up … terminfo" until SIGINT.
++          // Accept and complete the channel, running nothing — this app renders
++          // its own ANSI so remote terminfo is irrelevant — and Ghostty proceeds.
++          // Stopgap until the Ghostty-side fix ships (~Sept 2026); drop then.
++          const channel = accept?.();
++          if (!channel)
++            return;
++          ignoreErrors(() => {
++            channel.exit(0);
++            channel.end();
++          });
++        });
+         sshSession.on("shell", (accept, reject) => {
+           if (!acceptingSessions || connectionSessions >= sessionLimits.perConnection || activeSessions >= sessionLimits.global) {
+             reject?.();
