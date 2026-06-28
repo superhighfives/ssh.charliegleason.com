@@ -14,7 +14,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR /app
 
+# patches/ is needed at install time: bun applies patchedDependencies
+# (the @opentui/ssh exec-channel fix) during `bun install`.
 COPY package.json bun.lock ./
+COPY patches/ ./patches/
 RUN bun install --frozen-lockfile --production
 
 COPY . .
