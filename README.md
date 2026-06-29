@@ -2,22 +2,13 @@
 
 A terminal-based portfolio application built with [OpenTUI](https://opentui.dev) and React. Experience an interactive, SSH-accessible portfolio featuring animated ASCII shader art, menu-driven navigation, and a beautifully styled terminal interface.
 
-```
-$ ssh charliegleason.com
-
-  ___ _            _ _        ___ _
- / __| |_  __ _ _ | (_)___   / __| |___ __ _ ___ ___ _ _
-| (__| ' \/ _` | '_| | / -_) | (_ | / -_) _` (_-</ _ \ ' \
- \___|_||_\__,_|_| |_|_\___|  \___|_\___\__,_/__/\___/_||_|
-
-Designer, developer, creative coder, and musician.
-```
-
 To try it out, run:
 
 ```terminal
 ssh charliegleason.com
 ```
+
+https://github.com/user-attachments/assets/aec39846-cf18-49ee-a120-41b0e46b96c4
 
 ## Features
 
