@@ -1,3 +1,6 @@
+diff --git a/node_modules/@opentui/ssh/.bun-tag-13d3d219d7068d05 b/.bun-tag-13d3d219d7068d05
+new file mode 100644
+index 0000000000000000000000000000000000000000..e69de29bb2d1d6434b8b29ae775ad8c2e48c5391
 diff --git a/node_modules/@opentui/ssh/.bun-tag-34121a6a41f75708 b/.bun-tag-34121a6a41f75708
 new file mode 100644
 index 0000000000000000000000000000000000000000..e69de29bb2d1d6434b8b29ae775ad8c2e48c5391
@@ -5,26 +8,37 @@ diff --git a/node_modules/@opentui/ssh/.bun-tag-914d40e330a40237 b/.bun-tag-914d
 new file mode 100644
 index 0000000000000000000000000000000000000000..e69de29bb2d1d6434b8b29ae775ad8c2e48c5391
 diff --git a/index.js b/index.js
-index a9212b248ab04f0ae8f04baeeec4df37374c4ea3..ad58782ddcf09e187397f804f1ea27f11431d5c7 100644
+index a9212b248ab04f0ae8f04baeeec4df37374c4ea3..39b0fa0c2c68510f04510074376fab04ab175420 100644
 --- a/index.js
 +++ b/index.js
-@@ -577,6 +577,31 @@ function createConnectionHandler(dependencies) {
+@@ -577,6 +577,42 @@ function createConnectionHandler(dependencies) {
            accept?.();
            activeBridge?.resize(info2.cols, info2.rows);
          });
-+        sshSession.on("exec", (accept, _reject, _info2) => {
-+          // Ghostty's ssh-terminfo integration probes the remote with
-+          // `infocmp xterm-ghostty` and uploads via `tic -x -`, both as exec
-+          // channels. @opentui/ssh registers no exec handler, so ssh2 rejects
-+          // them — clean for a plain `ssh host cmd` (it fails fast with "exec
-+          // request failed"), but Ghostty's `+ssh` wrapper mishandles the
++        sshSession.on("exec", (accept, reject, info2) => {
++          // Ghostty's ssh-terminfo integration sets up the remote over a single
++          // exec channel carrying a shell script that runs `infocmp xterm-ghostty`
++          // and `tic -x -`. @opentui/ssh registers no exec handler, so ssh2
++          // rejects it — clean for a plain `ssh host cmd` (it fails fast with
++          // "exec request failed"), but Ghostty's wrapper mishandles the
 +          // rejection and stalls on "Setting up … terminfo" until SIGINT.
-+          // Accept and complete the channel, running nothing — this app renders
-+          // its own ANSI so remote terminfo is irrelevant — and Ghostty proceeds.
-+          // Unlike `shell`, this intentionally ignores session limits: a probe
-+          // creates no renderer/PTY, completes synchronously, and must succeed
-+          // even at capacity so terminfo setup never blocks a connect.
++          //
++          // Answer ONLY terminfo setup (commands referencing `infocmp`/`tic`),
++          // running nothing — this app renders its own ANSI so the remote
++          // terminfo is irrelevant; we just complete the channel so the client
++          // proceeds. Any other exec is rejected, so this stays a no-command
++          // server rather than silently succeeding arbitrary commands on a
++          // public auth:"open" endpoint.
++          //
++          // Terminfo probes intentionally bypass the `shell` session limits:
++          // they create no renderer/PTY, complete synchronously, and must
++          // succeed even at capacity so connecting never blocks.
 +          // Stopgap until the Ghostty-side fix ships (~Sept 2026); drop then.
++          const command = info2?.command ?? "";
++          if (!/\b(?:infocmp|tic)\b/.test(command)) {
++            reject?.();
++            return;
++          }
 +          const channel = accept?.();
 +          if (!channel)
 +            return;
