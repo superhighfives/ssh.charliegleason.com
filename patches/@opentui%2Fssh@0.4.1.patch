@@ -1,15 +1,18 @@
 diff --git a/node_modules/@opentui/ssh/.bun-tag-34121a6a41f75708 b/.bun-tag-34121a6a41f75708
 new file mode 100644
 index 0000000000000000000000000000000000000000..e69de29bb2d1d6434b8b29ae775ad8c2e48c5391
+diff --git a/node_modules/@opentui/ssh/.bun-tag-914d40e330a40237 b/.bun-tag-914d40e330a40237
+new file mode 100644
+index 0000000000000000000000000000000000000000..e69de29bb2d1d6434b8b29ae775ad8c2e48c5391
 diff --git a/index.js b/index.js
-index a9212b248ab04f0ae8f04baeeec4df37374c4ea3..1eb8f7b4ae82236f4791e6b3dc44ef482b36726f 100644
+index a9212b248ab04f0ae8f04baeeec4df37374c4ea3..ad58782ddcf09e187397f804f1ea27f11431d5c7 100644
 --- a/index.js
 +++ b/index.js
-@@ -577,6 +577,24 @@ function createConnectionHandler(dependencies) {
+@@ -577,6 +577,31 @@ function createConnectionHandler(dependencies) {
            accept?.();
            activeBridge?.resize(info2.cols, info2.rows);
          });
-+        sshSession.on("exec", (accept, reject, info2) => {
++        sshSession.on("exec", (accept, _reject, _info2) => {
 +          // Ghostty's ssh-terminfo integration probes the remote with
 +          // `infocmp xterm-ghostty` and uploads via `tic -x -`, both as exec
 +          // channels. @opentui/ssh registers no exec handler, so ssh2 rejects
@@ -18,10 +21,17 @@ index a9212b248ab04f0ae8f04baeeec4df37374c4ea3..1eb8f7b4ae82236f4791e6b3dc44ef48
 +          // rejection and stalls on "Setting up … terminfo" until SIGINT.
 +          // Accept and complete the channel, running nothing — this app renders
 +          // its own ANSI so remote terminfo is irrelevant — and Ghostty proceeds.
++          // Unlike `shell`, this intentionally ignores session limits: a probe
++          // creates no renderer/PTY, completes synchronously, and must succeed
++          // even at capacity so terminfo setup never blocks a connect.
 +          // Stopgap until the Ghostty-side fix ships (~Sept 2026); drop then.
 +          const channel = accept?.();
 +          if (!channel)
 +            return;
++          // Drain stdin so the inbound flow-control window keeps refilling: a
++          // `tic -x -` upload writes to stdin, and an unconsumed channel would
++          // let a >2MB payload exhaust the 2MB window and hang the client.
++          channel.on("data", () => {});
 +          ignoreErrors(() => {
 +            channel.exit(0);
 +            channel.end();
