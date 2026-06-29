@@ -45,15 +45,15 @@ bun install
 bun dev
 ```
 
-This runs the app with hot-reloading enabled via `bun run --watch`.
+Runs the TUI directly in your terminal (no SSH) with hot-reloading via `bun run --watch` — the fastest way to iterate on views and shaders.
 
-### Run the TUI directly
+### Run the SSH server locally
 
 ```bash
-bun run src/index.tsx
+bun ssh
 ```
 
-For SSH access (how the production site is served), see [SSH Access](#ssh-access) below.
+Starts the full SSH front door on port 2222 — the same path the production site is served over. See [SSH Access](#ssh-access) below.
 
 ## Keyboard Controls
 
@@ -69,28 +69,26 @@ For SSH access (how the production site is served), see [SSH Access](#ssh-access
 ```
 ssh.charliegleason.com/
 ├── src/
-│   ├── index.tsx          # Main entry point with routing and keyboard handling
-│   ├── ssh-server.ts      # SSH front door (ssh2 + node-pty)
-│   ├── theme.ts           # Color palette and spacing constants
-│   ├── components/
-│   │   ├── AsciiTitle.tsx # ASCII art title header
-│   │   ├── Menu.tsx       # Navigation menu component
-│   │   ├── Metadata.tsx   # Sidebar with location, work, and links
-│   │   └── ShaderArt.tsx  # Animated ASCII shader display
+│   ├── index.tsx           # App component: routing + keyboard handling
+│   ├── dev.tsx             # Local dev entry — runs the TUI directly (no SSH)
+│   ├── ssh-server.tsx      # SSH front door (@opentui/ssh, one renderer per session)
+│   ├── redirect-server.ts  # Apex HTTP server that 301s to www
+│   ├── theme.ts            # Color palette and spacing constants
+│   ├── components/         # AsciiTitle, Menu, Metadata, ShaderArt,
+│   │                       # LoadingScreen, ErrorScreen, UrlModal, …
 │   ├── data/
-│   │   └── content.ts     # All portfolio content
+│   │   ├── content.ts      # Bundled fallback portfolio content
+│   │   ├── store.ts        # Pulls + caches content from charliegleason.com
+│   │   ├── live.ts         # Live now-playing / presence data
+│   │   └── sessions.ts     # Active SSH session counter
 │   ├── shaders/
-│   │   ├── index.ts       # Shader rendering engine
-│   │   └── noise.ts       # Simplex noise implementation
-│   └── views/
-│       ├── MainMenu.tsx   # Main landing view
-│       ├── AboutView.tsx  # Full biography
-│       ├── ProjectsView.tsx # Portfolio projects
-│       ├── WritingView.tsx  # Blog posts
-│       ├── MoreView.tsx     # Awards, talks, education, races
-│       └── ContactView.tsx  # Contact information
-├── Dockerfile             # Production container (Node + Bun)
-├── fly.toml               # Fly.io deploy config
+│   │   ├── index.ts        # Shader rendering engine
+│   │   └── noise.ts        # Simplex noise implementation
+│   └── views/              # MainMenu, About, Projects, Writing, More, Contact
+├── patches/                # bun patch for @opentui/ssh (Ghostty terminfo)
+├── Dockerfile              # Production container (Bun)
+├── fly.toml                # Fly.io deploy config
+├── DEPLOYMENT.md           # Apex-on-Fly / www-on-Workers deployment guide
 ├── package.json
 └── tsconfig.json
 ```
@@ -186,7 +184,7 @@ The shader type is randomly selected on each launch. Character density mapping u
 
 ## SSH Access
 
-The app ships with an SSH front door (`src/ssh-server.ts`) that spawns a fresh TUI per session. The wrapper uses `ssh2` + `node-pty` and runs on Node; the TUI child runs on Bun.
+The app ships with an SSH front door (`src/ssh-server.tsx`) built on [`@opentui/ssh`](https://opentui.dev). Each session gets a `CliRenderer` wired straight to the SSH channel, and the React tree is mounted onto it with `@opentui/react` — there's no child process or PTY per session, so a single Bun process holds many concurrent connections cheaply.
 
 ### Try it locally
 
@@ -235,18 +233,32 @@ The first connection prompts to trust the host key. After that it goes straight 
 
 The SSH server reads these env vars (all optional, sensible defaults):
 
-| Variable                  | Default                  | Purpose                              |
-| ------------------------- | ------------------------ | ------------------------------------ |
-| `SSH_PORT`                | `2222`                   | Port to listen on                    |
-| `SSH_HOST_KEY_PATH`       | `./host_key`             | Path to ed25519/rsa host key file    |
-| `APP_CMD` / `APP_ARGS`    | `bun` / `src/index.tsx`  | Child process to spawn per session. `APP_ARGS` is split on spaces, so paths with spaces aren't supported. |
-| `SSH_MAX_CONCURRENT`      | `25`                     | Max simultaneous sessions            |
-| `SSH_IDLE_TIMEOUT_MS`     | `300000` (5 min)         | Kill session after inactivity        |
-| `SSH_SESSION_MAX_MS`      | `1800000` (30 min)       | Hard cap per session                 |
-| `SSH_RATE_LIMIT_MAX`      | `10`                     | Connections per IP per window        |
-| `SSH_RATE_LIMIT_WINDOW_MS`| `60000` (1 min)          | Rate limit window                    |
+| Variable                   | Default       | Purpose                                |
+| -------------------------- | ------------- | -------------------------------------- |
+| `SSH_PORT`                 | `2222`        | Port to listen on                      |
+| `SSH_BIND`                 | `0.0.0.0`     | Address to bind                        |
+| `SSH_HOST_KEY_PATH`        | `./host_key`  | Path to the host key (generated if absent) |
+| `SSH_MAX_CONCURRENT`       | `100`         | Max simultaneous sessions across the server |
+| `SSH_MAX_PER_CONNECTION`   | `1`           | Max sessions on a single connection    |
+| `SSH_IDLE_TIMEOUT_MS`      | `300000`      | Disconnect after inactivity (5 min)    |
+| `SSH_SESSION_MAX_MS`       | `1800000`     | Hard cap per session (30 min)          |
+| `SSH_RATE_LIMIT_MAX`       | `10`          | Connections per IP per window          |
+| `SSH_RATE_LIMIT_WINDOW_MS` | `60000`       | Rate-limit window (1 min)              |
 
-In SSH mode (`SSH_MODE=1`, set automatically by the wrapper), the TUI doesn't run `open` on the server. URLs are still visible next to each item, so users can copy them from their terminal.
+The portfolio content and live data are pulled over HTTP, and the same process runs the apex redirect server:
+
+| Variable           | Default                          | Purpose                                       |
+| ------------------ | -------------------------------- | --------------------------------------------- |
+| `CONTENT_API_BASE` | `https://www.charliegleason.com` | Origin to pull content + live data from       |
+| `HTTP_PORT`        | `8080`                           | Port for the apex→www redirect server         |
+| `HTTP_BIND`        | `::`                             | Address the redirect server binds             |
+| `REDIRECT_TARGET`  | `https://www.charliegleason.com` | Where apex web traffic is 301'd               |
+
+Over SSH the app isn't given an `openUrl` handler, so it never shells out to `open` on the server. URLs stay visible next to each item (and in the URL modal) for users to copy into their own terminal.
+
+### Ghostty terminfo
+
+Connecting from [Ghostty](https://ghostty.org) with `ssh-terminfo` enabled runs `infocmp`/`tic` over an SSH `exec` channel to install its terminfo. `@opentui/ssh` doesn't answer `exec`, which makes Ghostty stall on _"Setting up xterm-ghostty terminfo…"_. A small `bun patch` in `patches/` answers terminfo `exec` requests so the connection proceeds — a stopgap until the Ghostty-side fix ships.
 
 ## Credits
 
