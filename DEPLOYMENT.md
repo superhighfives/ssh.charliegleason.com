@@ -138,9 +138,9 @@ things keep it off this particular apex:
   keep a Worker serving HTTP on the same name — there's no way to share an apex
   `A`/CNAME between the two today. The apex therefore points straight at Fly with a
   plain `A`, and Cloudflare keeps `www`.
-- **Custom-port Spectrum is a $200/month Enterprise feature.** Routing arbitrary
-  `:22` to your own origin sits on the Enterprise tier — the right call for an
-  edge-L4 product aimed at platforms, but a lot for a personal apex.
+- **And it's a $200/month plan.** Spectrum's Business plan ($200/month) includes
+  one SSH application, so SSH is supported without an Enterprise contract — it's
+  just a lot to spend on a personal apex.
 
 If the bare-apex `ssh` were ever optional, the textbook pattern is a subdomain —
 `ssh.charliegleason.com`, grey cloud, `A` at Fly — which is what
