@@ -27,9 +27,9 @@ web hits to the canonical `www`.
 SSH needs a raw TCP port (`:22`) at the apex. Cloudflare's HTTP proxy (orange
 cloud) forwards HTTP(S), so the apex stays DNS-only and resolves straight to the
 Fly machine, which answers both `:22` and `:443`. The website stays on Cloudflare,
-where the proxy earns its keep. Cloudflare *can* put SSH on the edge — see
-[Why not Spectrum?](#why-not-spectrum) — it's just not the right tier for a
-personal apex.
+where the proxy earns its keep. Cloudflare *can* carry SSH at the edge with
+[Spectrum](#why-not-spectrum), but it can't currently share the apex with Workers —
+so the apex points straight at Fly.
 
 ### DNS
 
@@ -129,18 +129,18 @@ them above `SSH_MAX_CONCURRENT` so the app's own limits trip first.
 
 [Cloudflare Spectrum](https://developers.cloudflare.com/spectrum/) is the
 Cloudflare-native way to bring arbitrary TCP — SSH included — onto the edge with
-DDoS protection in front. It's a great fit for production platforms; it just isn't
-the right tier for a personal apex, for two reasons:
+DDoS protection in front, and it's the natural fit for a production platform. Two
+things keep it off this particular apex:
 
-- **Custom ports are an Enterprise capability.** Spectrum on lower plans covers a
-  fixed set of well-known applications; arbitrary `:22` to your own origin is
-  Enterprise. Sensible gating for an edge-L4 product aimed at platforms.
-- **A Spectrum apex is a CNAME, so the name can't be shared.** With Spectrum (or a
-  Worker) fronting the apex, the apex resolves through a Cloudflare-managed CNAME.
-  DNS won't let a CNAME coexist with another record at the same name (RFC 1034), so
-  you can't *also* add the `A` record that points `:22` at Fly — you'd have a CNAME
-  for `:443` and no way to attach an `A` for `:22`. It's one or the other at the
-  apex, so the apex goes to Fly with a plain `A` and Cloudflare keeps `www`.
+- **It can't currently share the apex with Workers.** A Spectrum apex resolves
+  through a Cloudflare-managed CNAME, and a CNAME can't coexist with another record
+  at the same name (RFC 1034). So you can't run Spectrum for SSH on the apex *and*
+  keep a Worker serving HTTP on the same name — there's no way to share an apex
+  `A`/CNAME between the two today. The apex therefore points straight at Fly with a
+  plain `A`, and Cloudflare keeps `www`.
+- **Custom-port Spectrum is a $200/month Enterprise feature.** Routing arbitrary
+  `:22` to your own origin sits on the Enterprise tier — the right call for an
+  edge-L4 product aimed at platforms, but a lot for a personal apex.
 
 If the bare-apex `ssh` were ever optional, the textbook pattern is a subdomain —
 `ssh.charliegleason.com`, grey cloud, `A` at Fly — which is what
