@@ -30,9 +30,12 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 # IntelliJ based IDEs
 .idea
 
+# Local agent/session data
+.claude
+
 # Finder (MacOS) folder config
 .DS_Store
 
-# SSH host key - generated locally, deployed via fly secrets
+# SSH host key - generated on first run locally and on the Fly volume
 host_key
 host_key.pub

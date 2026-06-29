@@ -18,7 +18,10 @@
   "dependencies": {
     "@opentui/core": "^0.4.1",
     "@opentui/react": "^0.4.1",
-    "@opentui/ssh": "^0.4.1",
+    "@opentui/ssh": "0.4.1",
     "react": "^19.2.3"
+  },
+  "patchedDependencies": {
+    "@opentui/ssh@0.4.1": "patches/@opentui%2Fssh@0.4.1.patch"
   }
 }
