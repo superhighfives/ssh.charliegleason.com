@@ -129,8 +129,8 @@ them above `SSH_MAX_CONCURRENT` so the app's own limits trip first.
 
 [Cloudflare Spectrum](https://developers.cloudflare.com/spectrum/) is the
 Cloudflare-native way to bring arbitrary TCP — SSH included — onto the edge with
-DDoS protection in front, and it's the natural fit for a production platform. Two
-things keep it off this particular apex:
+DDoS protection in front, and it's the natural fit for a production platform. It's
+supported and cheap — the catch is sharing the apex:
 
 - **It can't currently share the apex with Workers.** A Spectrum apex resolves
   through a Cloudflare-managed CNAME, and a CNAME can't coexist with another record
@@ -138,9 +138,9 @@ things keep it off this particular apex:
   keep a Worker serving HTTP on the same name — there's no way to share an apex
   `A`/CNAME between the two today. The apex therefore points straight at Fly with a
   plain `A`, and Cloudflare keeps `www`.
-- **And it's a $200/month plan.** Spectrum's Business plan ($200/month) includes
-  one SSH application, so SSH is supported without an Enterprise contract — it's
-  just a lot to spend on a personal apex.
+- **It's a paid add-on.** Spectrum includes one SSH application on the Pro plan
+  ($25/month), so SSH is supported without an Enterprise contract — the apex
+  sharing limit above is the real reason it's not used here, not the price.
 
 If the bare-apex `ssh` were ever optional, the textbook pattern is a subdomain —
 `ssh.charliegleason.com`, grey cloud, `A` at Fly — which is what
