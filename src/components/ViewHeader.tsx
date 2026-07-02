@@ -23,8 +23,8 @@ type ViewHeaderProps = {
 export function ViewHeader({ title, hint, flush = false }: ViewHeaderProps) {
   const { contentWidth, isCompact } = useLayout();
   // Layout: "brand / page title" (brand quiet, title bold) / controls, then a
-  // blank, the rule, a blank, and the content. flexShrink={0} keeps the blank
-  // rows from being collapsed by flex.
+  // blank, the rule, and — unless `flush` — a trailing blank before the content.
+  // flexShrink={0} keeps the blank rows from being collapsed by flex.
   return (
     <box flexDirection="column" flexShrink={0}>
       <text fg={colors.yellow} content={t`Charlie Gleason / ${bold(title)}`} />

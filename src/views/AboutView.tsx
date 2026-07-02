@@ -40,9 +40,11 @@ export function AboutView({ scrollRef }: AboutViewProps) {
         {/* A reactive band: keypresses spark via SparkField's own keyboard
             handler (arrow-key scrolling included); wheel scroll routes through
             the ref below. Embers fountain up from the band's grey rule at the
-            bottom toward the header rule above — touching both lines. */}
+            bottom toward the header rule above — touching both lines. Width
+            matches ViewHeader's rule (contentWidth - 1, one short to clear the
+            scrollbar gutter) so the band's rule aligns with the header rule. */}
         <box marginBottom={1} flexShrink={0}>
-          <SparkField ref={sparkRef} width={contentWidth} />
+          <SparkField ref={sparkRef} width={contentWidth - 1} />
         </box>
         <scrollbox
           ref={scrollRef}
