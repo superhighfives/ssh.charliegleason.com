@@ -35,10 +35,11 @@ export type AppProps = {
 // PageUp/PageDown jump by this many items.
 const VISIBLE_ITEMS = 4;
 
-// How far PageUp/PageDown move the scroll views (About, More). Roughly one
-// terminal page of body content.
-const SCROLL_PAGE_ROWS = 10;
-const SCROLL_LINE_ROWS = 3;
+// Arrow keys move one line at a time in the scroll views (About, More).
+const SCROLL_LINE_ROWS = 1;
+// PageUp/PageDown move a full page but keep one line of context so you don't
+// lose your place across the jump.
+const SCROLL_PAGE_OVERLAP = 1;
 
 type LinkItem = { title: string; url: string };
 
@@ -115,18 +116,25 @@ export function App({ onExit, openUrl }: AppProps) {
     if (currentView === "About" || currentView === "More") {
       const sb = scrollRef.current;
       if (!sb) return;
+      // Command+Up/Down jump to start/finish (same as Home/End). Only delivered
+      // by terminals that forward the Cmd key via the Kitty keyboard protocol
+      // (Kitty, Ghostty, WezTerm…); Terminal.app/iTerm2 and most SSH clients
+      // intercept Cmd, so Home/End remain the portable path.
+      const jumpToEnds = key.super || key.meta;
       switch (key.name) {
         case "up":
-          sb.scrollBy(-SCROLL_LINE_ROWS);
+          if (jumpToEnds) sb.scrollTo(0);
+          else sb.scrollBy(-SCROLL_LINE_ROWS);
           break;
         case "down":
-          sb.scrollBy(SCROLL_LINE_ROWS);
+          if (jumpToEnds) sb.scrollTo(sb.scrollHeight);
+          else sb.scrollBy(SCROLL_LINE_ROWS);
           break;
         case "pageup":
-          sb.scrollBy(-SCROLL_PAGE_ROWS);
+          sb.scrollBy(-Math.max(1, sb.viewport.height - SCROLL_PAGE_OVERLAP));
           break;
         case "pagedown":
-          sb.scrollBy(SCROLL_PAGE_ROWS);
+          sb.scrollBy(Math.max(1, sb.viewport.height - SCROLL_PAGE_OVERLAP));
           break;
         case "home":
           sb.scrollTo(0);
@@ -165,10 +173,15 @@ export function App({ onExit, openUrl }: AppProps) {
         break;
       }
       case "up":
-        moveSelection(subIndex - 1);
+        // Command+Up jumps to the first item (same as Home), matching macOS's
+        // "top of document" idiom. Terminal-dependent — see the About/More
+        // handler note.
+        if (key.super || key.meta) moveSelection(0);
+        else moveSelection(subIndex - 1);
         break;
       case "down":
-        moveSelection(subIndex + 1);
+        if (key.super || key.meta) moveSelection(list.length - 1);
+        else moveSelection(subIndex + 1);
         break;
       case "pageup":
         moveSelection(subIndex - VISIBLE_ITEMS);

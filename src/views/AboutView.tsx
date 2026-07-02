@@ -34,18 +34,7 @@ export function AboutView({ scrollRef }: AboutViewProps) {
   return (
     <box flexDirection="column" padding={1}>
       <box flexDirection="column" width={contentWidth} height={contentHeight}>
-        {/* flush: no blank below the header rule, so the spark band butts right
-            against it and the embers can reach it. */}
-        <ViewHeader title="About" hint="Scroll: ↑/↓ · pgup/pgdn · home/end" flush />
-        {/* A reactive band: keypresses spark via SparkField's own keyboard
-            handler (arrow-key scrolling included); wheel scroll routes through
-            the ref below. Embers fountain up from the band's grey rule at the
-            bottom toward the header rule above — touching both lines. Width
-            matches ViewHeader's rule (contentWidth - 1, one short to clear the
-            scrollbar gutter) so the band's rule aligns with the header rule. */}
-        <box marginBottom={1} flexShrink={0}>
-          <SparkField ref={sparkRef} width={contentWidth - 1} />
-        </box>
+        <ViewHeader title="About" hint="Scroll: ↑/↓ · pgup/pgdn · home/end (⌘↑/↓)" />
         <scrollbox
           ref={scrollRef}
           flexGrow={1}
@@ -61,7 +50,7 @@ export function AboutView({ scrollRef }: AboutViewProps) {
                 size (the main menu only surfaces them in its side column on wide
                 terminals). No divider — just spacing above. The grid reflows
                 2×2 → 1×4 with the width. */}
-            <box marginTop={1}>
+            <box marginTop={2}>
               <Metadata columns={metaColumns} />
             </box>
           </box>

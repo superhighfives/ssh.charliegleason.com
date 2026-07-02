@@ -18,7 +18,7 @@ export function ContactView({ selectedIndex, scrollRef }: ContactViewProps) {
   return (
     <box flexDirection="column" padding={1}>
       <box flexDirection="column" width={contentWidth} height={contentHeight}>
-        <ViewHeader title="Contact" hint="↑/↓ · pgup/pgdn · home/end  •  Enter to open" />
+        <ViewHeader title="Contact" hint="↑/↓ · pgup/pgdn · home/end (⌘↑/↓)  •  Enter to open" />
         <scrollbox
           ref={scrollRef}
           flexGrow={1}

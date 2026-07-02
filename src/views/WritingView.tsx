@@ -18,7 +18,7 @@ export function WritingView({ selectedIndex, scrollRef }: WritingViewProps) {
   return (
     <box flexDirection="column" padding={1}>
       <box flexDirection="column" width={contentWidth} height={contentHeight}>
-        <ViewHeader title="Writing" hint="↑/↓ · pgup/pgdn · home/end  •  Enter to open" />
+        <ViewHeader title="Writing" hint="↑/↓ · pgup/pgdn · home/end (⌘↑/↓)  •  Enter to open" />
         <scrollbox
           ref={scrollRef}
           flexGrow={1}
