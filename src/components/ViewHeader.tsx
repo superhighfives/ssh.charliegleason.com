@@ -15,9 +15,12 @@ type ViewHeaderProps = {
   // Right-hand portion of the help line (after "← Back (esc)  •  "). Hidden
   // on compact terminals.
   hint: string;
+  // Drop the blank row below the rule so the next element butts right against
+  // it. About uses this so its spark band can touch the header rule.
+  flush?: boolean;
 };
 
-export function ViewHeader({ title, hint }: ViewHeaderProps) {
+export function ViewHeader({ title, hint, flush = false }: ViewHeaderProps) {
   const { contentWidth, isCompact } = useLayout();
   // Layout: "brand / page title" (brand quiet, title bold) / controls, then a
   // blank, the rule, a blank, and the content. flexShrink={0} keeps the blank
@@ -33,7 +36,7 @@ export function ViewHeader({ title, hint }: ViewHeaderProps) {
       {/* One column short of full width so the rule clears the scrollbar
           gutter of the content below it. */}
       <Divider width={contentWidth - 1} />
-      <box height={1} flexShrink={0} />
+      {!flush && <box height={1} flexShrink={0} />}
     </box>
   );
 }
