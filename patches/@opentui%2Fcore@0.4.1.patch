@@ -1,0 +1,36 @@
+diff --git a/index.js b/index.js
+index 1ec69d5280f0b0c4268e5b8ebb57f5609245eff8..79e0d9b2e98330bc0906f6b399dd9c96914072fd 100644
+--- a/index.js
++++ b/index.js
+@@ -9599,7 +9599,13 @@ class SliderRenderable extends Renderable {
+         }
+       }
+       for (let y2 = 0;y2 < this.height; y2++) {
+-        buffer.setCellWithAlphaBlending(this.x + realX, this.y + y2, char, this._foregroundColor, this._backgroundColor);
++        if (coverage >= 2) {
++          // Full-cell thumb: paint via the cell BACKGROUND (space) rather than a
++          // █ glyph, so it stays solid on terminals that add line/cell spacing.
++          buffer.setCellWithAlphaBlending(this.x + realX, this.y + y2, " ", this._foregroundColor, this._foregroundColor);
++        } else {
++          buffer.setCellWithAlphaBlending(this.x + realX, this.y + y2, char, this._foregroundColor, this._backgroundColor);
++        }
+       }
+     }
+   }
+@@ -9630,7 +9636,15 @@ class SliderRenderable extends Renderable {
+         }
+       }
+       for (let x2 = 0;x2 < this.width; x2++) {
+-        buffer.setCellWithAlphaBlending(this.x + x2, this.y + realY, char, this._foregroundColor, this._backgroundColor);
++        if (coverage >= 2) {
++          // Full-cell thumb: paint via the cell BACKGROUND (space) rather than a
++          // █ glyph. Some terminals (e.g. macOS Terminal) add line-leading that a
++          // stacked-glyph bar can't fill, so █ renders "dashed"; a background
++          // fill covers the whole cell and looks solid everywhere.
++          buffer.setCellWithAlphaBlending(this.x + x2, this.y + realY, " ", this._foregroundColor, this._foregroundColor);
++        } else {
++          buffer.setCellWithAlphaBlending(this.x + x2, this.y + realY, char, this._foregroundColor, this._backgroundColor);
++        }
+       }
+     }
+   }

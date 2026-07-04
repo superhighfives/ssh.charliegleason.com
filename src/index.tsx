@@ -2,7 +2,7 @@
 
 import { type ScrollBoxRenderable } from "@opentui/core";
 import { useKeyboard } from "@opentui/react";
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useRef, useLayoutEffect, useMemo } from "react";
 
 import { menuItems, type MenuItem } from "./data/content";
 import { useContent, useContentStatus } from "./data/store";
@@ -116,19 +116,12 @@ export function App({ onExit, openUrl }: AppProps) {
     if (currentView === "About" || currentView === "More") {
       const sb = scrollRef.current;
       if (!sb) return;
-      // Command+Up/Down jump to start/finish (same as Home/End). Only delivered
-      // by terminals that forward the Cmd key via the Kitty keyboard protocol
-      // (Kitty, Ghostty, WezTerm…); Terminal.app/iTerm2 and most SSH clients
-      // intercept Cmd, so Home/End remain the portable path.
-      const jumpToEnds = key.super || key.meta;
       switch (key.name) {
         case "up":
-          if (jumpToEnds) sb.scrollTo(0);
-          else sb.scrollBy(-SCROLL_LINE_ROWS);
+          sb.scrollBy(-SCROLL_LINE_ROWS);
           break;
         case "down":
-          if (jumpToEnds) sb.scrollTo(sb.scrollHeight);
-          else sb.scrollBy(SCROLL_LINE_ROWS);
+          sb.scrollBy(SCROLL_LINE_ROWS);
           break;
         case "pageup":
           sb.scrollBy(-Math.max(1, sb.viewport.height - SCROLL_PAGE_OVERLAP));
@@ -173,15 +166,10 @@ export function App({ onExit, openUrl }: AppProps) {
         break;
       }
       case "up":
-        // Command+Up jumps to the first item (same as Home), matching macOS's
-        // "top of document" idiom. Terminal-dependent — see the About/More
-        // handler note.
-        if (key.super || key.meta) moveSelection(0);
-        else moveSelection(subIndex - 1);
+        moveSelection(subIndex - 1);
         break;
       case "down":
-        if (key.super || key.meta) moveSelection(list.length - 1);
-        else moveSelection(subIndex + 1);
+        moveSelection(subIndex + 1);
         break;
       case "pageup":
         moveSelection(subIndex - VISIBLE_ITEMS);
@@ -198,13 +186,37 @@ export function App({ onExit, openUrl }: AppProps) {
     }
   });
 
-  // Reset scroll position when view changes. (Selection state is reset when
-  // entering a sub-view from the main menu.)
-  useEffect(() => {
-    if (currentView !== "main") {
-      scrollRef.current?.scrollTo(0);
-    }
-  }, [currentView]);
+  // Reset scroll position when the scroll view (re)mounts, and suppress the
+  // scrollbar flash. On mount the scrollbox derives bar visibility from a
+  // still-settling layout: for the first frame the viewport is a row short
+  // while the space reserved for the (hidden) scrollbars is reclaimed, so a
+  // text area that actually fits briefly "overflows" and the vertical bar
+  // flashes on then off. Force the bar hidden while the layout settles, then
+  // hand control back to the scrollbox's own auto-visibility.
+  //
+  // This MUST be a layout effect: @opentui/react only *schedules* the paint
+  // (resetAfterCommit → requestRender), so a passive effect would run after the
+  // first paint and the bar would already have flashed. useLayoutEffect runs
+  // synchronously during commit, before that scheduled paint, so the bar is
+  // hidden before it can appear. Keyed on the size too, since a resize remounts
+  // the view (and its scrollbox) via the parent `key`. (Selection state is
+  // reset separately when entering from the menu.)
+  useLayoutEffect(() => {
+    if (currentView === "main") return;
+    const sb = scrollRef.current;
+    if (!sb) return;
+    sb.scrollTo(0);
+    sb.verticalScrollBar.visible = false;
+    // Give the layout a few frames to settle before restoring auto-visibility.
+    // The SSH renderer runs at 30fps (~33ms/frame) and the transient off-by-one
+    // viewport clears on the next layout pass, so wait ~3 frames to be safe. The
+    // only cost is the bar appearing ~100ms late on genuinely scrollable views —
+    // imperceptible, and far better than the flash on views that fit.
+    const settle = setTimeout(() => {
+      scrollRef.current?.verticalScrollBar.resetVisibilityControl();
+    }, 100);
+    return () => clearTimeout(settle);
+  }, [currentView, termWidth, termHeight]);
 
   if (tooSmall) {
     return <TooSmall width={termWidth} height={termHeight} />;
