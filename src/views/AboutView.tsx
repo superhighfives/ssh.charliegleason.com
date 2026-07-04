@@ -34,7 +34,7 @@ export function AboutView({ scrollRef }: AboutViewProps) {
   return (
     <box flexDirection="column" padding={1}>
       <box flexDirection="column" width={contentWidth} height={contentHeight}>
-        <ViewHeader title="About" hint="Scroll: ↑/↓ · pgup/pgdn · home/end (⌘↑/↓)" />
+        <ViewHeader title="About" hint="Scroll: ↑/↓ · pgup/pgdn · home/end" />
         <scrollbox
           ref={scrollRef}
           flexGrow={1}
