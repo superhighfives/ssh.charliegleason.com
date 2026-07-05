@@ -3,7 +3,7 @@
 import { type ScrollBoxRenderable } from "@opentui/core";
 import { type RefObject, useRef } from "react";
 import { useContent } from "../data/store";
-import { colors } from "../theme";
+import { useColors } from "../components/ThemeProvider";
 import { useLayout } from "../components/useLayout";
 import { Metadata } from "../components/Metadata";
 import { SparkField, type SparkFieldHandle } from "../components/SparkField";
@@ -24,6 +24,7 @@ const EXTRA_BIO = [
 ].join("\n\n");
 
 export function AboutView({ scrollRef }: AboutViewProps) {
+  const colors = useColors();
   const { contentWidth, contentHeight } = useLayout();
   const { bio } = useContent();
   const sparkRef = useRef<SparkFieldHandle>(null);

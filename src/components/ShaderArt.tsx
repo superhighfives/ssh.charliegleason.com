@@ -6,7 +6,7 @@ import { useKeyboard, useTerminalDimensions } from "@opentui/react";
 import { useEffect, useMemo, useState } from "react";
 import type { NowPlaying } from "../data/live";
 import { renderShader, SHADER_TYPES, type ShaderType } from "../shaders";
-import { colors } from "../theme";
+import { useColors } from "./ThemeProvider";
 
 // Build the now-playing caption, keeping the track and artist bold even when the
 // line must be truncated to `room` columns. Walks the segments (plain prefix,
@@ -49,6 +49,9 @@ interface ShaderArtProps {
 	type?: ShaderType;
 	// Optional now-playing track, shown on the left of the caption row.
 	song?: NowPlaying | null;
+	// Extra key hint appended after the shader controls (e.g. "t theme"). Only
+	// shown when there's room for the controls hint at all.
+	extraControls?: string;
 }
 
 export function ShaderArt({
@@ -59,7 +62,9 @@ export function ShaderArt({
   chromeRows = 18,
   type,
   song,
+  extraControls,
 }: ShaderArtProps) {
+	const colors = useColors();
 	const startIdx = type ? Math.max(0, SHADER_TYPES.indexOf(type)) : 0;
 	const [shaderIdx, setShaderIdx] = useState(startIdx);
 	const shaderType = SHADER_TYPES[shaderIdx]!;
@@ -98,7 +103,9 @@ export function ShaderArt({
 	// song keeps room; the keys still work regardless.
 	const showHint = width >= 50;
 	const shaderName = shaderType.charAt(0).toUpperCase() + shaderType.slice(1);
-	const controls = showHint ? `${shaderName} (n to cycle)` : shaderName;
+	const controls = showHint
+		? `${shaderName} (n to cycle)${extraControls ? ` · ${extraControls}` : ""}`
+		: shaderName;
 
 	// Reserve room for the controls plus a 2-col gap; the song truncates (with an
 	// ellipsis, keeping track/artist bold) into whatever's left.

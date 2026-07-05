@@ -1,13 +1,14 @@
 // src/components/Menu.tsx
 
 import { menuItems } from "../data/content";
-import { colors } from "../theme";
+import { useColors } from "./ThemeProvider";
 
 type MenuProps = {
   selectedIndex: number;
 };
 
 export function Menu({ selectedIndex }: MenuProps) {
+  const colors = useColors();
   return (
     <box flexDirection="column">
       {menuItems.map((item, index) => {

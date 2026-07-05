@@ -3,7 +3,7 @@
 import { type ScrollBoxRenderable } from "@opentui/core";
 import type { RefObject } from "react";
 import { useContent } from "../data/store";
-import { colors } from "../theme";
+import { useColors } from "../components/ThemeProvider";
 import { useLayout } from "../components/useLayout";
 import { ViewHeader } from "../components/ViewHeader";
 
@@ -13,6 +13,7 @@ type WritingViewProps = {
 };
 
 export function WritingView({ selectedIndex, scrollRef }: WritingViewProps) {
+  const colors = useColors();
   const { contentWidth, contentHeight } = useLayout();
   const { writing } = useContent();
   return (

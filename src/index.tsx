@@ -17,6 +17,7 @@ import { TooSmall } from "./components/TooSmall";
 import { LoadingScreen } from "./components/LoadingScreen";
 import { ErrorScreen } from "./components/ErrorScreen";
 import { useLayout } from "./components/useLayout";
+import { ThemeProvider, useThemeControl } from "./components/ThemeProvider";
 
 type View = "main" | MenuItem;
 
@@ -43,7 +44,18 @@ const SCROLL_PAGE_OVERLAP = 1;
 
 type LinkItem = { title: string; url: string };
 
-export function App({ onExit, openUrl }: AppProps) {
+// Wraps the app in the theme provider so every view follows the terminal's
+// detected light/dark mode. Both entry points (SSH + local dev) render <App>,
+// so the provider lives here rather than in each of them.
+export function App(props: AppProps) {
+  return (
+    <ThemeProvider>
+      <AppContent {...props} />
+    </ThemeProvider>
+  );
+}
+
+function AppContent({ onExit, openUrl }: AppProps) {
   const [currentView, setCurrentView] = useState<View>("main");
   const [menuIndex, setMenuIndex] = useState(0);
   const [subIndex, setSubIndex] = useState(0);
@@ -52,6 +64,7 @@ export function App({ onExit, openUrl }: AppProps) {
   const { termWidth, termHeight, tooSmall } = useLayout();
   const { projects, writing, contact } = useContent();
   const status = useContentStatus();
+  const { cycle: cycleTheme } = useThemeControl();
 
   const list: LinkItem[] = useMemo(() => {
     if (currentView === "Projects") return projects.map((p) => ({ title: p.name, url: p.url }));
@@ -98,6 +111,13 @@ export function App({ onExit, openUrl }: AppProps) {
 
     if (key.ctrl && key.name === "c") {
       onExit();
+      return;
+    }
+
+    // `t` toggles the palette (auto → light → dark → auto) from anywhere. Handy
+    // on terminals that don't report their theme, where auto-detect can't fire.
+    if (key.name === "t") {
+      cycleTheme();
       return;
     }
     // `q` quits only from the main menu. Inside sub-views it would feel

@@ -3,7 +3,7 @@
 import { type ScrollBoxRenderable } from "@opentui/core";
 import type { ReactNode, RefObject } from "react";
 import { useContent } from "../data/store";
-import { colors } from "../theme";
+import { useColors } from "../components/ThemeProvider";
 import { useLayout } from "../components/useLayout";
 import { ViewHeader } from "../components/ViewHeader";
 
@@ -14,6 +14,7 @@ type MoreViewProps = {
 // Compact section wrapper. One blank row above the heading and one below it,
 // for every section. Lets us drop ad-hoc marginTop/marginBottom on each block.
 function Section({ title, isFirst, children }: { title: string; isFirst?: boolean; children: ReactNode }) {
+  const colors = useColors();
   return (
     <box flexDirection="column" marginTop={isFirst ? 0 : 2}>
       <text fg={colors.yellow} content={title} />
@@ -25,6 +26,7 @@ function Section({ title, isFirst, children }: { title: string; isFirst?: boolea
 
 // Year-prefixed row: 6-cell year column on the left, content on the right.
 function YearRow({ year, children }: { year: string; children: ReactNode }) {
+  const colors = useColors();
   return (
     <box flexDirection="row">
       <box width={6}>
@@ -38,6 +40,7 @@ function YearRow({ year, children }: { year: string; children: ReactNode }) {
 }
 
 export function MoreView({ scrollRef }: MoreViewProps) {
+  const colors = useColors();
   const { contentWidth, contentHeight } = useLayout();
   const { awards, talks, education, certifications, volunteering, races } =
     useContent();

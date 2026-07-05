@@ -4,7 +4,7 @@
 // broken-looking truncation you get when an 80-column layout meets a 40-column
 // terminal.
 
-import { colors } from "../theme";
+import { useColors } from "./ThemeProvider";
 import { MIN_HEIGHT, MIN_WIDTH } from "./useLayout";
 
 type TooSmallProps = {
@@ -13,6 +13,7 @@ type TooSmallProps = {
 };
 
 export function TooSmall({ width, height }: TooSmallProps) {
+  const colors = useColors();
   return (
     <box flexGrow={1} justifyContent="center" alignItems="center" padding={1}>
       <box flexDirection="column" alignItems="center">

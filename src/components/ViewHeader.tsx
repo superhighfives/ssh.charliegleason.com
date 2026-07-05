@@ -6,7 +6,7 @@
 // things out.
 
 import { bold, t } from "@opentui/core";
-import { colors } from "../theme";
+import { useColors } from "./ThemeProvider";
 import { Divider } from "./Divider";
 import { useLayout } from "./useLayout";
 
@@ -21,6 +21,7 @@ type ViewHeaderProps = {
 };
 
 export function ViewHeader({ title, hint, flush = false }: ViewHeaderProps) {
+	const colors = useColors();
 	const { contentWidth, isCompact } = useLayout();
 	// Layout: "brand / page title" (brand quiet, title bold) / controls, then a
 	// blank, the rule, and — unless `flush` — a trailing blank before the content.
@@ -30,7 +31,7 @@ export function ViewHeader({ title, hint, flush = false }: ViewHeaderProps) {
 			<text fg={colors.yellow} content={t`Charlie Gleason / ${bold(title)}`} />
 			<text
 				fg={colors.dim}
-				content={isCompact ? "← Back (esc)" : `← Back (esc) · ${hint}`}
+				content={isCompact ? "← Back (esc)" : `← Back (esc) · ${hint} · t theme`}
 			/>
 			<box height={1} flexShrink={0} />
 			{/* One column short of full width so the rule clears the scrollbar

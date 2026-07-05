@@ -6,7 +6,7 @@
 // the empty terminal reads as "working on it" rather than broken.
 
 import { useEffect, useState } from "react";
-import { colors } from "../theme";
+import { useColors } from "./ThemeProvider";
 import { AsciiTitle } from "./AsciiTitle";
 
 // Braille dots cycle smoothly and feel at home in a terminal — sparser and less
@@ -26,6 +26,7 @@ function useSpinner(): string {
 }
 
 export function LoadingScreen() {
+  const colors = useColors();
   const spinner = useSpinner();
   return (
     <box flexGrow={1} flexDirection="column" padding={1}>
