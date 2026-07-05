@@ -31,7 +31,7 @@ export function ViewHeader({ title, hint, flush = false }: ViewHeaderProps) {
 			<text fg={colors.yellow} content={t`Charlie Gleason / ${bold(title)}`} />
 			<text
 				fg={colors.dim}
-				content={isCompact ? "← Back (esc)" : `← Back (esc) · ${hint} · t theme`}
+				content={isCompact ? "← Back (esc)" : `← Back (esc) · ${hint}`}
 			/>
 			<box height={1} flexShrink={0} />
 			{/* One column short of full width so the rule clears the scrollbar

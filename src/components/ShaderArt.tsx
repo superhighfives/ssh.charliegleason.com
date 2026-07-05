@@ -49,9 +49,6 @@ interface ShaderArtProps {
 	type?: ShaderType;
 	// Optional now-playing track, shown on the left of the caption row.
 	song?: NowPlaying | null;
-	// Extra key hint appended after the shader controls (e.g. "t theme"). Only
-	// shown when there's room for the controls hint at all.
-	extraControls?: string;
 }
 
 export function ShaderArt({
@@ -62,7 +59,6 @@ export function ShaderArt({
   chromeRows = 18,
   type,
   song,
-  extraControls,
 }: ShaderArtProps) {
 	const colors = useColors();
 	const startIdx = type ? Math.max(0, SHADER_TYPES.indexOf(type)) : 0;
@@ -103,9 +99,7 @@ export function ShaderArt({
 	// song keeps room; the keys still work regardless.
 	const showHint = width >= 50;
 	const shaderName = shaderType.charAt(0).toUpperCase() + shaderType.slice(1);
-	const controls = showHint
-		? `${shaderName} (n to cycle)${extraControls ? ` · ${extraControls}` : ""}`
-		: shaderName;
+	const controls = showHint ? `${shaderName} (n to cycle)` : shaderName;
 
 	// Reserve room for the controls plus a 2-col gap; the song truncates (with an
 	// ellipsis, keeping track/artist bold) into whatever's left.

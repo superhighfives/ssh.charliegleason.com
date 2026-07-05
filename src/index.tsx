@@ -17,7 +17,7 @@ import { TooSmall } from "./components/TooSmall";
 import { LoadingScreen } from "./components/LoadingScreen";
 import { ErrorScreen } from "./components/ErrorScreen";
 import { useLayout } from "./components/useLayout";
-import { ThemeProvider, useThemeControl } from "./components/ThemeProvider";
+import { ThemeProvider } from "./components/ThemeProvider";
 
 type View = "main" | MenuItem;
 
@@ -64,7 +64,6 @@ function AppContent({ onExit, openUrl }: AppProps) {
   const { termWidth, termHeight, tooSmall } = useLayout();
   const { projects, writing, contact } = useContent();
   const status = useContentStatus();
-  const { cycle: cycleTheme } = useThemeControl();
 
   const list: LinkItem[] = useMemo(() => {
     if (currentView === "Projects") return projects.map((p) => ({ title: p.name, url: p.url }));
@@ -111,13 +110,6 @@ function AppContent({ onExit, openUrl }: AppProps) {
 
     if (key.ctrl && key.name === "c") {
       onExit();
-      return;
-    }
-
-    // `t` toggles the palette (auto → light → dark → auto) from anywhere. Handy
-    // on terminals that don't report their theme, where auto-detect can't fire.
-    if (key.name === "t") {
-      cycleTheme();
       return;
     }
     // `q` quits only from the main menu. Inside sub-views it would feel

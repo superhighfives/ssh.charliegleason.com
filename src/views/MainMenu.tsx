@@ -120,7 +120,6 @@ export function MainMenu({ selectedIndex }: MainMenuProps) {
               chromeRows={0}
               type="waves"
               song={nowPlaying}
-              extraControls="t theme"
             />
           </box>
         )}
