@@ -13,6 +13,7 @@ import {
   forwardRef,
   useEffect,
   useImperativeHandle,
+  useMemo,
   useRef,
   useState,
 } from "react";
@@ -71,11 +72,12 @@ export const SparkField = forwardRef<SparkFieldHandle, SparkFieldProps>(
   function SparkField({ width, height = 4 }, ref) {
     const colors = useColors();
     // One colour per spark tier: interaction sparks burn in `dim`, ambient ones
-    // in the quieter `faint` grey. Built here so it tracks the terminal theme.
-    const TIER_COLOR: Record<SparkKind, string> = {
-      key: colors.dim,
-      ambient: colors.faint,
-    };
+    // in the quieter `faint` grey. Memoised so it isn't rebuilt on every frame
+    // (this component re-renders each ~40ms tick); only recomputed on theme flip.
+    const TIER_COLOR = useMemo<Record<SparkKind, string>>(
+      () => ({ key: colors.dim, ambient: colors.faint }),
+      [colors.dim, colors.faint]
+    );
     // Sparks live in a ref (mutated in place each tick); a frame counter forces
     // the re-render. Keeping them out of state avoids a new array allocation per
     // spark on every keypress.

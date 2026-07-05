@@ -40,9 +40,9 @@ export const light: Colors = {
 
 export const palettes = { dark, light } as const;
 
-// Default export kept as the dark palette so non-React modules can still import
-// `colors` directly. React components should call `useColors()` so they follow
-// the detected terminal theme.
+// Named `colors` export kept pointing at the dark palette so non-React modules
+// can still import it directly. React components should call `useColors()` so
+// they follow the detected terminal theme.
 export const colors = dark;
 
 export const spacing = {
