@@ -2,7 +2,7 @@
 
 import { bold, t } from "@opentui/core";
 import type { ReactNode } from "react";
-import { colors } from "../theme";
+import { useColors } from "./ThemeProvider";
 
 type AsciiTitleProps = {
   // Optional element pinned to the right of the name row (e.g. "Also here").
@@ -12,6 +12,7 @@ type AsciiTitleProps = {
 };
 
 export function AsciiTitle({ aside }: AsciiTitleProps) {
+  const colors = useColors();
   return (
     <box flexDirection="column" justifyContent="center">
       <box flexDirection="row" justifyContent="space-between">

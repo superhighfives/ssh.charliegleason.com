@@ -17,6 +17,7 @@ import { TooSmall } from "./components/TooSmall";
 import { LoadingScreen } from "./components/LoadingScreen";
 import { ErrorScreen } from "./components/ErrorScreen";
 import { useLayout } from "./components/useLayout";
+import { ThemeProvider } from "./components/ThemeProvider";
 
 type View = "main" | MenuItem;
 
@@ -43,7 +44,18 @@ const SCROLL_PAGE_OVERLAP = 1;
 
 type LinkItem = { title: string; url: string };
 
-export function App({ onExit, openUrl }: AppProps) {
+// Wraps the app in the theme provider so every view follows the terminal's
+// detected light/dark mode. Both entry points (SSH + local dev) render <App>,
+// so the provider lives here rather than in each of them.
+export function App(props: AppProps) {
+  return (
+    <ThemeProvider>
+      <AppContent {...props} />
+    </ThemeProvider>
+  );
+}
+
+function AppContent({ onExit, openUrl }: AppProps) {
   const [currentView, setCurrentView] = useState<View>("main");
   const [menuIndex, setMenuIndex] = useState(0);
   const [subIndex, setSubIndex] = useState(0);

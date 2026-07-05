@@ -13,10 +13,11 @@ import {
   forwardRef,
   useEffect,
   useImperativeHandle,
+  useMemo,
   useRef,
   useState,
 } from "react";
-import { colors } from "../theme";
+import { useColors } from "./ThemeProvider";
 
 type SparkKind = "key" | "ambient";
 type Spark = {
@@ -49,11 +50,6 @@ const TICK_MS = 40;
 // Chance per tick of an unprompted ambient ember (~one every ~2s at 40ms).
 const AMBIENT_CHANCE = 0.02;
 
-const TIER_COLOR: Record<SparkKind, string> = {
-  key: colors.dim,
-  ambient: colors.faint,
-};
-
 function sparkChar(life: number): string {
   if (life > 0.66) return SPARK_CHARS[0]!;
   if (life > 0.33) return SPARK_CHARS[1]!;
@@ -74,6 +70,14 @@ type SparkFieldProps = {
 
 export const SparkField = forwardRef<SparkFieldHandle, SparkFieldProps>(
   function SparkField({ width, height = 4 }, ref) {
+    const colors = useColors();
+    // One colour per spark tier: interaction sparks burn in `dim`, ambient ones
+    // in the quieter `faint` grey. Memoised so it isn't rebuilt on every frame
+    // (this component re-renders each ~40ms tick); only recomputed on theme flip.
+    const TIER_COLOR = useMemo<Record<SparkKind, string>>(
+      () => ({ key: colors.dim, ambient: colors.faint }),
+      [colors.dim, colors.faint]
+    );
     // Sparks live in a ref (mutated in place each tick); a frame counter forces
     // the re-render. Keeping them out of state avoids a new array allocation per
     // spark on every keypress.

@@ -1,7 +1,7 @@
 // src/components/Metadata.tsx
 
 import { useContent } from "../data/store";
-import { colors } from "../theme";
+import { useColors } from "./ThemeProvider";
 
 type MetadataProps = {
   // How many columns to lay the four fields out in. 1 → a single stacked column
@@ -11,6 +11,7 @@ type MetadataProps = {
 };
 
 export function Metadata({ columns = 1 }: MetadataProps) {
+  const colors = useColors();
   const { metadata } = useContent();
 
   const items = [

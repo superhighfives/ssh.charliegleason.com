@@ -7,7 +7,7 @@
 
 import { TextAttributes } from "@opentui/core";
 import { useKeyboard } from "@opentui/react";
-import { colors } from "../theme";
+import { useColors } from "./ThemeProvider";
 
 type UrlModalProps = {
   title: string;
@@ -16,6 +16,7 @@ type UrlModalProps = {
 };
 
 export function UrlModal({ title, url, onClose }: UrlModalProps) {
+  const colors = useColors();
   useKeyboard((key) => {
     if (key.name === "escape" || key.name === "return" || key.name === "q") {
       onClose();

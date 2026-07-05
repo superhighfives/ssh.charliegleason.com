@@ -4,12 +4,13 @@
 // content width so the line sits flush against the right edge instead of
 // stopping at an arbitrary 76 characters.
 
-import { colors } from "../theme";
+import { useColors } from "./ThemeProvider";
 
 type DividerProps = {
   width: number;
 };
 
 export function Divider({ width }: DividerProps) {
+  const colors = useColors();
   return <text fg={colors.border} content={"─".repeat(Math.max(0, width))} />;
 }

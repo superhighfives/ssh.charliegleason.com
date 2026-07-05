@@ -4,9 +4,10 @@
 // charliegleason.com fails so we have nothing to render (see ../data/store).
 // Mirrors TooSmall: a quiet centred message pointing people at the website.
 
-import { colors } from "../theme";
+import { useColors } from "./ThemeProvider";
 
 export function ErrorScreen() {
+  const colors = useColors();
   return (
     <box flexGrow={1} justifyContent="center" alignItems="center" padding={1}>
       <box flexDirection="column" alignItems="center">

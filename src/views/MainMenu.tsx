@@ -4,7 +4,7 @@ import { menuItems } from "../data/content";
 import { useLive } from "../data/live";
 import { useSessionCount } from "../data/sessions";
 import { useContent } from "../data/store";
-import { colors } from "../theme";
+import { useColors } from "../components/ThemeProvider";
 import { AsciiTitle } from "../components/AsciiTitle";
 import { nowPlayingContent, ShaderArt } from "../components/ShaderArt";
 import { Menu } from "../components/Menu";
@@ -51,6 +51,7 @@ function estimateWrappedLines(text: string, width: number): number {
 }
 
 export function MainMenu({ selectedIndex }: MainMenuProps) {
+  const colors = useColors();
   const { contentWidth, contentHeight, isStacked, showShader } = useLayout();
   const { bio } = useContent();
   const { nowPlaying } = useLive();

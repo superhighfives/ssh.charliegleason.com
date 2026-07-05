@@ -6,7 +6,7 @@ import { useKeyboard, useTerminalDimensions } from "@opentui/react";
 import { useEffect, useMemo, useState } from "react";
 import type { NowPlaying } from "../data/live";
 import { renderShader, SHADER_TYPES, type ShaderType } from "../shaders";
-import { colors } from "../theme";
+import { useColors } from "./ThemeProvider";
 
 // Build the now-playing caption, keeping the track and artist bold even when the
 // line must be truncated to `room` columns. Walks the segments (plain prefix,
@@ -60,6 +60,7 @@ export function ShaderArt({
   type,
   song,
 }: ShaderArtProps) {
+	const colors = useColors();
 	const startIdx = type ? Math.max(0, SHADER_TYPES.indexOf(type)) : 0;
 	const [shaderIdx, setShaderIdx] = useState(startIdx);
 	const shaderType = SHADER_TYPES[shaderIdx]!;
