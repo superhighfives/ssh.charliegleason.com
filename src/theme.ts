@@ -13,6 +13,8 @@ export type Colors = {
   faint: string;
   border: string;
   background: string;
+  error: string;
+  accentForeground: string;
 };
 
 // The original dark palette, tuned for a dark terminal background.
@@ -24,6 +26,8 @@ export const dark: Colors = {
   faint: "#666666",
   border: "#444444",
   background: "#1a1a1a",
+  error: "#FF6666",
+  accentForeground: "#1A1A1A",
 };
 
 // The light-terminal counterpart. `white` (primary body text) flips to near
@@ -36,6 +40,8 @@ export const light: Colors = {
   faint: "#BBBBBB",
   border: "#CCCCCC",
   background: "#FFFFFF",
+  error: "#A52A2A",
+  accentForeground: "#000000",
 };
 
 export const palettes = { dark, light } as const;

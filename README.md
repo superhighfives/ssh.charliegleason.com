@@ -230,19 +230,23 @@ The first connection prompts to trust the host key. After that it goes straight 
 
 ### Configuration
 
-The SSH server reads these env vars (all optional, sensible defaults):
+The SSH server reads these environment variables:
 
-| Variable                   | Default       | Purpose                                |
-| -------------------------- | ------------- | -------------------------------------- |
-| `SSH_PORT`                 | `2222`        | Port to listen on                      |
-| `SSH_BIND`                 | `0.0.0.0`     | Address to bind                        |
-| `SSH_HOST_KEY_PATH`        | `./host_key`  | Path to the host key (generated if absent) |
-| `SSH_MAX_CONCURRENT`       | `100`         | Max simultaneous sessions across the server |
-| `SSH_MAX_PER_CONNECTION`   | `1`           | Max sessions on a single connection    |
-| `SSH_IDLE_TIMEOUT_MS`      | `300000`      | Disconnect after inactivity (5 min)    |
-| `SSH_SESSION_MAX_MS`       | `1800000`     | Hard cap per session (30 min)          |
-| `SSH_RATE_LIMIT_MAX`       | `10`          | Connections per IP per window          |
-| `SSH_RATE_LIMIT_WINDOW_MS` | `60000`       | Rate-limit window (1 min)              |
+| Variable                         | Default                     | Purpose                                      |
+| -------------------------------- | --------------------------- | -------------------------------------------- |
+| `SSH_PORT`                       | `2222`                      | Port to listen on                            |
+| `SSH_BIND`                       | `0.0.0.0`                   | Address to bind                              |
+| `SSH_HOST_KEY_PATH`              | `./host_key`                | Path to the host key (generated if absent)   |
+| `SSH_MAX_CONCURRENT`             | `100`                       | Max simultaneous sessions across the server |
+| `SSH_MAX_PER_CONNECTION`         | `1`                         | Max sessions on a single connection          |
+| `SSH_IDLE_TIMEOUT_MS`            | `300000`                    | Disconnect after inactivity (5 min)          |
+| `SSH_SESSION_MAX_MS`             | `1800000`                   | Hard cap per session (30 min)                 |
+| `SSH_RATE_LIMIT_MAX`             | `10`                        | Connections per IP per window                |
+| `SSH_RATE_LIMIT_WINDOW_MS`       | `60000`                     | Rate-limit window (1 min)                    |
+| `CLOUDFLARE_ACCOUNT_ID`          | Required for contact form   | Cloudflare account that sends email          |
+| `CLOUDFLARE_EMAIL_API_TOKEN`     | Required for contact form   | API token with Email Sending permission      |
+| `CONTACT_EMAIL_TO`               | Required for contact form   | Fixed destination for contact messages       |
+| `CONTACT_EMAIL_FROM`             | Required for contact form   | Verified Email Sending address               |
 
 The portfolio content and live data are pulled over HTTP, and the same process runs the apex redirect server:
 
@@ -253,7 +257,9 @@ The portfolio content and live data are pulled over HTTP, and the same process r
 | `HTTP_BIND`        | `::`                             | Address the redirect server binds             |
 | `REDIRECT_TARGET`  | `https://www.charliegleason.com` | Where apex web traffic is 301'd               |
 
-Over SSH the app isn't given an `openUrl` handler, so it never shells out to `open` on the server. URLs stay visible next to each item (and in the URL modal) for users to copy into their own terminal.
+The contact form uses the [Cloudflare Email Service REST API](https://developers.cloudflare.com/email-service/api/send-emails/rest-api/). Copy `.env.example` to `.env` for local development. For Fly, set the same values with `fly secrets set` after verifying the sender and destination addresses in Cloudflare Email Service.
+
+Over SSH the app isn't given an `openUrl` handler, so it never shells out to `open` on the server. The URL dialog copies links back to the client terminal with OSC 52.
 
 ### Ghostty terminfo
 

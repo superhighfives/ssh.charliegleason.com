@@ -7,6 +7,7 @@
     "dev": "bun run --watch src/dev.tsx",
     "ssh": "bun run src/ssh-server.tsx",
     "ssh:watch": "bun run --watch src/ssh-server.tsx",
+    "test": "bun test",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
@@ -16,13 +17,14 @@
     "typescript": "^5"
   },
   "dependencies": {
-    "@opentui/core": "^0.4.1",
-    "@opentui/react": "^0.4.1",
-    "@opentui/ssh": "0.4.1",
+    "@opentui/core": "0.4.5",
+    "@opentui/react": "0.4.5",
+    "@opentui/ssh": "0.4.5",
+    "@tuiparts/react": ">=0.0.1 <0.1.0",
     "react": "^19.2.3"
   },
   "patchedDependencies": {
-    "@opentui/ssh@0.4.1": "patches/@opentui%2Fssh@0.4.1.patch",
-    "@opentui/core@0.4.1": "patches/@opentui%2Fcore@0.4.1.patch"
+    "@opentui/core@0.4.5": "patches/@opentui%2Fcore@0.4.5.patch",
+    "@opentui/ssh@0.4.5": "patches/@opentui%2Fssh@0.4.5.patch"
   }
 }

@@ -1,0 +1,29 @@
+diff --git a/index.js b/index.js
+index a9212b248ab04f0ae8f04baeeec4df37374c4ea3..ce674e14ac263ab601aa622df3b759def58c1a1a 100644
+--- a/index.js
++++ b/index.js
+@@ -577,6 +577,24 @@ function createConnectionHandler(dependencies) {
+           accept?.();
+           activeBridge?.resize(info2.cols, info2.rows);
+         });
++        sshSession.on("exec", (accept, reject, info2) => {
++          // Ghostty uses an exec channel to install its terminfo before opening
++          // the shell. Accept only that probe; this public server runs no
++          // arbitrary commands.
++          const command = info2?.command ?? "";
++          if (!/\b(?:infocmp|tic)\b/.test(command)) {
++            reject?.();
++            return;
++          }
++          const channel = accept?.();
++          if (!channel)
++            return;
++          channel.on("data", () => {});
++          ignoreErrors(() => {
++            channel.exit(0);
++            channel.end();
++          });
++        });
+         sshSession.on("shell", (accept, reject) => {
+           if (!acceptingSessions || connectionSessions >= sessionLimits.perConnection || activeSessions >= sessionLimits.global) {
+             reject?.();

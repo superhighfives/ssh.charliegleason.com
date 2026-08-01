@@ -14,6 +14,7 @@ import { useLayout } from "../components/useLayout";
 
 type MainMenuProps = {
   selectedIndex: number;
+  onSelectedIndexChange: (index: number) => void;
 };
 
 // Width of the metadata column in the side-by-side layout.
@@ -50,7 +51,7 @@ function estimateWrappedLines(text: string, width: number): number {
   return lines;
 }
 
-export function MainMenu({ selectedIndex }: MainMenuProps) {
+export function MainMenu({ selectedIndex, onSelectedIndexChange }: MainMenuProps) {
   const colors = useColors();
   const { contentWidth, contentHeight, isStacked, showShader } = useLayout();
   const { bio } = useContent();
@@ -157,7 +158,10 @@ export function MainMenu({ selectedIndex }: MainMenuProps) {
                 <Divider width={bioInnerWidth} />
               </box>
             )}
-            <Menu selectedIndex={selectedIndex} />
+            <Menu
+              selectedIndex={selectedIndex}
+              onSelectedIndexChange={onSelectedIndexChange}
+            />
           </box>
 
           {!isStacked && (

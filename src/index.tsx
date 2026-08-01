@@ -18,6 +18,8 @@ import { LoadingScreen } from "./components/LoadingScreen";
 import { ErrorScreen } from "./components/ErrorScreen";
 import { useLayout } from "./components/useLayout";
 import { ThemeProvider } from "./components/ThemeProvider";
+import type { ContactMessage } from "./contact-email";
+import { findDirectionalIndex, type GridDirection } from "./contact-grid";
 
 type View = "main" | MenuItem;
 
@@ -31,6 +33,7 @@ export type AppProps = {
   // a browser on the *server*); local dev passes a real launcher. When it's
   // missing we show a modal with the URL instead so remote users can copy it.
   openUrl?: OpenUrl;
+  sendContactMessage: (message: ContactMessage) => Promise<void>;
 };
 
 // PageUp/PageDown jump by this many items.
@@ -55,8 +58,9 @@ export function App(props: AppProps) {
   );
 }
 
-function AppContent({ onExit, openUrl }: AppProps) {
+function AppContent({ onExit, openUrl, sendContactMessage }: AppProps) {
   const [currentView, setCurrentView] = useState<View>("main");
+  const [contactMode, setContactMode] = useState<"options" | "form">("options");
   const [menuIndex, setMenuIndex] = useState(0);
   const [subIndex, setSubIndex] = useState(0);
   const [linkModal, setLinkModal] = useState<LinkItem | null>(null);
@@ -68,9 +72,8 @@ function AppContent({ onExit, openUrl }: AppProps) {
   const list: LinkItem[] = useMemo(() => {
     if (currentView === "Projects") return projects.map((p) => ({ title: p.name, url: p.url }));
     if (currentView === "Writing") return writing.map((w) => ({ title: w.title, url: w.url }));
-    if (currentView === "Contact") return contact.map((c) => ({ title: c.label, url: c.url }));
     return [];
-  }, [currentView, projects, writing, contact]);
+  }, [currentView, projects, writing]);
 
   const openLink = (item: LinkItem) => {
     if (openUrl) {
@@ -86,8 +89,8 @@ function AppContent({ onExit, openUrl }: AppProps) {
   // (Items have variable heights as descriptions/URLs wrap, so a fixed per-item
   // estimate drifts; the list scrollboxes disable viewport culling so every
   // item's position is readable.)
-  const moveSelection = (newIndex: number) => {
-    const clamped = Math.max(0, Math.min(list.length - 1, newIndex));
+  const moveSelection = (newIndex: number, itemCount = list.length) => {
+    const clamped = Math.max(0, Math.min(itemCount - 1, newIndex));
     setSubIndex(clamped);
 
     const sb = scrollRef.current;
@@ -102,6 +105,50 @@ function AppContent({ onExit, openUrl }: AppProps) {
     const scrollTop = sb.scrollTop;
     if (top < scrollTop) sb.scrollTo(top);
     else if (bottom > scrollTop + viewHeight) sb.scrollTo(bottom - viewHeight);
+  };
+
+  const moveContactSelection = (newIndex: number) => {
+    const clamped = Math.max(0, Math.min(contact.length, newIndex));
+    setSubIndex(clamped);
+
+    const sb = scrollRef.current;
+    if (clamped === 0) {
+      sb?.scrollTo(0);
+      return;
+    }
+    const item = sb?.findDescendantById(`contact-option-${clamped}`);
+    const first =
+      sb?.findDescendantById("contact-option-0") ??
+      sb?.findDescendantById("contact-option-1");
+    if (!sb || !item || !first) return;
+
+    const top = item.y - first.y;
+    const bottom = top + item.height;
+    if (top < sb.scrollTop) sb.scrollTo(top);
+    else if (bottom > sb.scrollTop + sb.viewport.height) {
+      sb.scrollTo(bottom - sb.viewport.height);
+    }
+  };
+
+  const moveContactDirection = (direction: GridDirection) => {
+    const sb = scrollRef.current;
+    if (!sb) return;
+    const items = Array.from({ length: contact.length + 1 }, (_, index) =>
+      sb.findDescendantById(`contact-option-${index}`),
+    );
+    if (items.some((item) => !item)) return;
+
+    const nextIndex = findDirectionalIndex(
+      items.map((item) => ({
+        x: item?.x ?? 0,
+        y: item?.y ?? 0,
+        width: item?.width ?? 0,
+        height: item?.height ?? 0,
+      })),
+      subIndex,
+      direction,
+    );
+    moveContactSelection(nextIndex);
   };
 
   useKeyboard((key) => {
@@ -119,7 +166,47 @@ function AppContent({ onExit, openUrl }: AppProps) {
       return;
     }
 
-    if (currentView !== "main" && (key.name === "escape" || key.name === "backspace")) {
+    if (currentView === "Contact") {
+      if (contactMode === "form") {
+        if (key.name === "escape") setContactMode("options");
+        return;
+      }
+
+      if (key.name === "escape" || key.name === "backspace") {
+        setCurrentView("main");
+      } else if (key.name === "return") {
+        if (subIndex === 0) {
+          setContactMode("form");
+        } else {
+          const item = contact[subIndex - 1];
+          if (item) openLink({ title: item.label, url: item.url });
+        }
+      } else if (key.name === "tab" && subIndex === 0) {
+        setContactMode("form");
+      } else if (key.name === "up") {
+        moveContactDirection("up");
+      } else if (key.name === "down") {
+        moveContactDirection("down");
+      } else if (key.name === "left") {
+        moveContactDirection("left");
+      } else if (key.name === "right") {
+        moveContactDirection("right");
+      } else if (key.name === "pageup") {
+        moveContactSelection(subIndex - VISIBLE_ITEMS);
+      } else if (key.name === "pagedown") {
+        moveContactSelection(subIndex + VISIBLE_ITEMS);
+      } else if (key.name === "home") {
+        moveContactSelection(0);
+      } else if (key.name === "end") {
+        moveContactSelection(contact.length);
+      }
+      return;
+    }
+
+    if (
+      currentView !== "main" &&
+      (key.name === "escape" || key.name === "backspace")
+    ) {
       setCurrentView("main");
       return;
     }
@@ -164,13 +251,14 @@ function AppContent({ onExit, openUrl }: AppProps) {
         const selectedItem = menuItems[menuIndex];
         if (selectedItem) {
           setSubIndex(0);
+          setContactMode("options");
           setCurrentView(selectedItem);
         }
       }
       return;
     }
 
-    // List views: Projects, Writing, Contact
+    // List views: Projects and Writing.
     switch (key.name) {
       case "return": {
         const item = list[subIndex];
@@ -255,7 +343,12 @@ function AppContent({ onExit, openUrl }: AppProps) {
       flexGrow={1}
       alignItems="center"
     >
-      {currentView === "main" && <MainMenu selectedIndex={menuIndex} />}
+      {currentView === "main" && (
+        <MainMenu
+          selectedIndex={menuIndex}
+          onSelectedIndexChange={setMenuIndex}
+        />
+      )}
       {currentView === "About" && <AboutView scrollRef={scrollRef} />}
       {currentView === "Projects" && (
         <ProjectsView selectedIndex={subIndex} scrollRef={scrollRef} />
@@ -265,7 +358,17 @@ function AppContent({ onExit, openUrl }: AppProps) {
       )}
       {currentView === "More" && <MoreView scrollRef={scrollRef} />}
       {currentView === "Contact" && (
-        <ContactView selectedIndex={subIndex} scrollRef={scrollRef} />
+        <ContactView
+          mode={contactMode}
+          contact={contact}
+          selectedIndex={subIndex}
+          scrollRef={scrollRef}
+          onSubmit={sendContactMessage}
+          onActivateForm={() => {
+            setSubIndex(0);
+            setContactMode("form");
+          }}
+        />
       )}
       {linkModal && (
         <UrlModal

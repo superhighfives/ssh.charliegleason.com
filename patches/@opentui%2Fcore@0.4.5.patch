@@ -1,0 +1,60 @@
+diff --git a/index.bun.js b/index.bun.js
+index 815856bd386617571e24bda7b45da694c731cd04..50d1def618d6a3df8fe49f1f80756e1c7e7a2aee 100644
+--- a/index.bun.js
++++ b/index.bun.js
+@@ -10971,7 +10971,11 @@ class SliderRenderable extends Renderable {
+         }
+       }
+       for (let y2 = 0;y2 < this.height; y2++) {
+-        buffer.setCellWithAlphaBlending(this.x + realX, this.y + y2, char, this._foregroundColor, this._backgroundColor);
++        if (coverage >= 2) {
++          buffer.setCellWithAlphaBlending(this.x + realX, this.y + y2, " ", this._foregroundColor, this._foregroundColor);
++        } else {
++          buffer.setCellWithAlphaBlending(this.x + realX, this.y + y2, char, this._foregroundColor, this._backgroundColor);
++        }
+       }
+     }
+   }
+@@ -11002,7 +11006,11 @@ class SliderRenderable extends Renderable {
+         }
+       }
+       for (let x2 = 0;x2 < this.width; x2++) {
+-        buffer.setCellWithAlphaBlending(this.x + x2, this.y + realY, char, this._foregroundColor, this._backgroundColor);
++        if (coverage >= 2) {
++          buffer.setCellWithAlphaBlending(this.x + x2, this.y + realY, " ", this._foregroundColor, this._foregroundColor);
++        } else {
++          buffer.setCellWithAlphaBlending(this.x + x2, this.y + realY, char, this._foregroundColor, this._backgroundColor);
++        }
+       }
+     }
+   }
+diff --git a/index.node.js b/index.node.js
+index 0ddf03bf666a05f50c66bef32af65b1403ed0192..4b08725add5c0b03aeac6d4caae90c8de2d54a19 100644
+--- a/index.node.js
++++ b/index.node.js
+@@ -10970,7 +10970,11 @@ class SliderRenderable extends Renderable {
+         }
+       }
+       for (let y2 = 0;y2 < this.height; y2++) {
+-        buffer.setCellWithAlphaBlending(this.x + realX, this.y + y2, char, this._foregroundColor, this._backgroundColor);
++        if (coverage >= 2) {
++          buffer.setCellWithAlphaBlending(this.x + realX, this.y + y2, " ", this._foregroundColor, this._foregroundColor);
++        } else {
++          buffer.setCellWithAlphaBlending(this.x + realX, this.y + y2, char, this._foregroundColor, this._backgroundColor);
++        }
+       }
+     }
+   }
+@@ -11001,7 +11005,11 @@ class SliderRenderable extends Renderable {
+         }
+       }
+       for (let x2 = 0;x2 < this.width; x2++) {
+-        buffer.setCellWithAlphaBlending(this.x + x2, this.y + realY, char, this._foregroundColor, this._backgroundColor);
++        if (coverage >= 2) {
++          buffer.setCellWithAlphaBlending(this.x + x2, this.y + realY, " ", this._foregroundColor, this._foregroundColor);
++        } else {
++          buffer.setCellWithAlphaBlending(this.x + x2, this.y + realY, char, this._foregroundColor, this._backgroundColor);
++        }
+       }
+     }
+   }

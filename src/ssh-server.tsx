@@ -11,6 +11,7 @@ import { startContentSync } from "./data/store";
 import { startLiveSync } from "./data/live";
 import { addSession } from "./data/sessions";
 import { startRedirectServer } from "./redirect-server";
+import { sendContactEmail } from "./contact-email";
 
 const HOST_KEY_PATH = process.env.SSH_HOST_KEY_PATH ?? "./host_key";
 const PORT = Number(process.env.SSH_PORT ?? 2222);
@@ -75,7 +76,14 @@ const server = createServer({
   .serve((session) => {
     const removeSession = addSession();
     const root = createRoot(session.renderer);
-    root.render(<App onExit={() => session.end()} />);
+    root.render(
+      <App
+        onExit={() => session.end()}
+        sendContactMessage={(message) =>
+          sendContactEmail(message, session.remoteAddress.address)
+        }
+      />,
+    );
     session.onClose(() => {
       removeSession();
       root.unmount();
