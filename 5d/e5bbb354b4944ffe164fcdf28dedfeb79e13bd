@@ -1,0 +1,75 @@
+.env.example
+  s_63feb6015d82bd::t_dce9ccd9ddb7d9 1-4
+README.md
+  s_906147185b9d4a::t_363abbdec08802 233-249,260-262
+bun.lock
+  s_63feb6015d82bd::t_55a72e5c96a226 3,6,8-11,23-24,27,29,31,33,35,37,39,41,43,45,47,49,51,53-55,65,67,79,81,91,101,103,105,107,109
+docs/superpowers/plans/2026-07-30-contact-navigation.md
+  s_1bdd17233ef4d3::t_2e85b2ba31f40b 1-124
+docs/superpowers/specs/2026-07-30-contact-navigation-design.md
+  s_1bdd17233ef4d3::t_b7e5cd98dbe094 1-45
+package.json
+  s_63feb6015d82bd::t_b45ecfc29cab06 10,20-23,27-28
+patches/@opentui%2Fcore@0.4.5.patch
+  s_63feb6015d82bd::t_40bb19df7717eb 1-5,18-48
+patches/@opentui%2Fssh@0.4.5.patch
+  s_63feb6015d82bd::t_b906f61fbe3266 2,5,10-12
+src/components/Menu.tsx
+  s_906147185b9d4a::t_aa7820b94db30c 4,8,11,13-23
+src/components/ThemeProvider.tsx
+  s_1bdd17233ef4d3::t_ec5169fda33db8 18-19,44-50
+src/components/UrlModal.tsx
+  s_906147185b9d4a::t_d8785ec4ceb28b 13-18,34,51-55,57-62,74,80-81
+src/components/ui/button.tsx
+  s_1bdd17233ef4d3::t_0af08164cb3e06 1-62
+src/components/ui/dialog.tsx
+  s_63feb6015d82bd::t_07e9fad259d6a0 1-103
+src/components/ui/radio-group.tsx
+  s_63feb6015d82bd::t_b1fc4ee61fa3bd 1-72
+src/components/ui/theme.test.ts
+  s_1bdd17233ef4d3::t_18ab3146550a20 1-30
+src/components/ui/theme.ts
+  s_1bdd17233ef4d3::t_f6967763038c53 1-265
+src/components/ui/use-theme.tsx
+  s_1bdd17233ef4d3::t_f7194d0e08a9e4 1-25
+src/dev.tsx
+  s_63feb6015d82bd::t_9541db1fdad148 15,50-56
+src/ssh-server.tsx
+  s_63feb6015d82bd::t_4da96e79a78fb4 14,79-86
+src/theme.ts
+  s_1bdd17233ef4d3::t_87d47972948686 16-17,29-30,43-44
+src/views/MainMenu.tsx
+  s_906147185b9d4a::t_9d79e4de32209d 17,54,161-164
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "5de5bbb354b4944ffe164fcdf28dedfeb79e13bd",
+  "prompts": {},
+  "sessions": {
+    "s_1bdd17233ef4d3": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_04c19eff8ffeNoJBtoSu9Awaka",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Charlie Gleason <cgleason@cloudflare.com>"
+    },
+    "s_63feb6015d82bd": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_051a00605ffeGL8x61ahyRCLfe",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "Charlie Gleason <cgleason@cloudflare.com>"
+    },
+    "s_906147185b9d4a": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_0517c3455ffe2LqPXiD0xpzwZb",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Charlie Gleason <cgleason@cloudflare.com>"
+    }
+  }
+}
