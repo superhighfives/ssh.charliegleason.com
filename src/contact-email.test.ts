@@ -45,7 +45,7 @@ describe("sendContactEmail", () => {
     process.env.CONTACT_EMAIL_FROM = "contact@example.com";
     const fetchMock = Object.assign(
       mock(async (_input: string | URL | Request, _init?: RequestInit) =>
-        Response.json({ result: { delivered: ["charlie@example.com"], queued: [] } }),
+        Response.json({ success: true, result: { delivered: ["charlie@example.com"], queued: [] } }),
       ),
       { preconnect: originalFetch.preconnect },
     );
@@ -68,14 +68,39 @@ describe("sendContactEmail", () => {
     expect(payload.text).not.toContain("Name:");
   });
 
-  test("rejects a response that Cloudflare did not accept", async () => {
+  test("accepts Cloudflare's success response even with empty delivered/queued arrays", async () => {
+    // Cloudflare's synchronous response doesn't always know final delivery
+    // status yet - `success: true` with empty arrays means it was accepted.
     process.env.CLOUDFLARE_ACCOUNT_ID = "account-id";
     process.env.CLOUDFLARE_EMAIL_API_TOKEN = "token";
     process.env.CONTACT_EMAIL_TO = "charlie@example.com";
     process.env.CONTACT_EMAIL_FROM = "contact@example.com";
     globalThis.fetch = Object.assign(
       mock(async (_input: string | URL | Request, _init?: RequestInit) =>
-        Response.json({ result: { delivered: [], queued: [], permanent_bounces: ["charlie@example.com"] } }),
+        Response.json({
+          success: true,
+          result: { message_id: "abc", delivered: [], queued: [], permanent_bounces: [] },
+        }),
+      ),
+      { preconnect: originalFetch.preconnect },
+    );
+
+    await expect(
+      sendContactEmail(
+        { email: "ada@example.com", message: "Hello" },
+        "test-accepted",
+      ),
+    ).resolves.toBeUndefined();
+  });
+
+  test("rejects a response that Cloudflare bounced", async () => {
+    process.env.CLOUDFLARE_ACCOUNT_ID = "account-id";
+    process.env.CLOUDFLARE_EMAIL_API_TOKEN = "token";
+    process.env.CONTACT_EMAIL_TO = "charlie@example.com";
+    process.env.CONTACT_EMAIL_FROM = "contact@example.com";
+    globalThis.fetch = Object.assign(
+      mock(async (_input: string | URL | Request, _init?: RequestInit) =>
+        Response.json({ success: true, result: { delivered: [], queued: [], permanent_bounces: ["charlie@example.com"] } }),
       ),
       { preconnect: originalFetch.preconnect },
     );
@@ -85,6 +110,27 @@ describe("sendContactEmail", () => {
       sendContactEmail(
         { email: "ada@example.com", message: "Hello" },
         "test-bounce",
+      ),
+    ).rejects.toThrow("couldn't send");
+  });
+
+  test("rejects a response with success: false", async () => {
+    process.env.CLOUDFLARE_ACCOUNT_ID = "account-id";
+    process.env.CLOUDFLARE_EMAIL_API_TOKEN = "token";
+    process.env.CONTACT_EMAIL_TO = "charlie@example.com";
+    process.env.CONTACT_EMAIL_FROM = "contact@example.com";
+    globalThis.fetch = Object.assign(
+      mock(async (_input: string | URL | Request, _init?: RequestInit) =>
+        Response.json({ success: false, errors: [{ message: "bad token" }] }),
+      ),
+      { preconnect: originalFetch.preconnect },
+    );
+    console.error = mock(() => {});
+
+    await expect(
+      sendContactEmail(
+        { email: "ada@example.com", message: "Hello" },
+        "test-rejected",
       ),
     ).rejects.toThrow("couldn't send");
   });

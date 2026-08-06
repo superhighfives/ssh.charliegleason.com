@@ -18,6 +18,11 @@ type Field = "email" | "message";
 type FieldErrors = Partial<Record<Field, string>>;
 type FormStatus = "idle" | "sending" | "sent" | "error";
 
+// Matches the combined height of the two stacked contact cards beside it (in
+// the wide grid layout) so the box doesn't resize when swapping in the
+// centered error/sent states, and doesn't leave a gap below it either.
+const FORM_HEIGHT = 13;
+
 export function ContactForm({
 	onSubmit,
 	active = true,
@@ -35,6 +40,7 @@ export function ContactForm({
 	const textareaRef = useRef<TextareaRenderable>(null);
 	const focusIndex = useRef(0);
 	const submitting = useRef(false);
+	const retryRef = useRef<{ focus(): void } | null>(null);
 
 	const focus = (index: number) => {
 		focusIndex.current =
@@ -92,6 +98,19 @@ export function ContactForm({
 		focusIndex.current = 0;
 	}, [active]);
 
+	useEffect(() => {
+		if (status === "error") {
+			retryRef.current?.focus();
+		} else if (status === "idle" && active) {
+			focus(0);
+		}
+	}, [status]);
+
+	const retry = () => {
+		setStatus("idle");
+		setFeedback("");
+	};
+
 	useKeyboard((key) => {
 		if (!active || status === "sent") return;
 		if (key.name === "tab") {
@@ -109,20 +128,56 @@ export function ContactForm({
 			id="contact-option-0"
 			flexDirection="column"
 			border
-			borderColor={selected && !active ? colors.yellow : colors.border}
+			borderColor={
+				status !== "sent" && selected && !active ? colors.yellow : colors.border
+			}
 			title="Send a message"
-			titleColor={selected && !active ? colors.yellow : colors.white}
+			titleColor={
+				status !== "sent" && selected && !active ? colors.yellow : colors.white
+			}
 			paddingX={1}
 		>
 			{status === "sent" ? (
-				<text fg={colors.yellow} content={feedback} wrapMode="word" />
-			) : (
-				<box flexDirection="column" marginTop={1}>
+				<box
+					flexDirection="column"
+					minHeight={FORM_HEIGHT}
+					justifyContent="center"
+					alignItems="center"
+				>
 					<text
-						fg={colors.dim}
-						content={active ? "Tab moves between fields." : "Say hello."}
+						fg={colors.yellow}
+						content={feedback}
 						wrapMode="word"
+						width="80%"
 					/>
+				</box>
+			) : status === "error" ? (
+				<box
+					flexDirection="column"
+					minHeight={FORM_HEIGHT}
+					justifyContent="center"
+					alignItems="center"
+					gap={1}
+				>
+					<text
+						fg={colors.white}
+						content={feedback}
+						wrapMode="word"
+						width="80%"
+					/>
+					<Button
+						id="contact-retry"
+						ref={(renderable) => {
+							retryRef.current = renderable;
+						}}
+						intent="neutral"
+						label="Try again"
+						size="comfortable"
+						onPress={retry}
+					/>
+				</box>
+			) : (
+				<box flexDirection="column" minHeight={FORM_HEIGHT} flexGrow={1}>
 					<box flexDirection="column">
 						<box
 							id="contact-email-field"
@@ -161,14 +216,14 @@ export function ContactForm({
 							/>
 						)}
 					</box>
-					<box flexDirection="column">
+					<box flexDirection="column" flexGrow={1}>
 						<box
 							border
 							borderColor={borderColor("message")}
 							title="Message"
 							titleColor={colors.white}
 							paddingX={1}
-							height={4}
+							flexGrow={1}
 							onMouseDown={() => activate(1)}
 						>
 							<Textarea
@@ -178,7 +233,6 @@ export function ContactForm({
 									controls.current[1] = renderable;
 								}}
 								flexGrow={1}
-								height={2}
 								placeholder="What's on your mind?"
 								onPaste={(event) => {
 									if (message.length + event.bytes.length > 4_000) {
@@ -211,32 +265,23 @@ export function ContactForm({
 				</box>
 				<box
 					flexDirection="row"
-						justifyContent="flex-end"
-						gap={1}
-						marginTop={1}
-					>
-						<Button
-							id="contact-submit"
-							ref={(renderable) => {
-								controls.current[2] = renderable;
-							}}
-							label={status === "sending" ? "Sending..." : "Send message"}
-							size="comfortable"
-							disabled={status === "sending"}
-							onMouseDown={() => {
-								activate(2);
-								setFocusedField(null);
-							}}
-							onPress={() => void submit()}
-						/>
-						{feedback && (
-							<text
-								fg={status === "error" ? colors.error : colors.dim}
-								content={feedback}
-								wrapMode="word"
-							/>
-						)}
-					</box>
+					justifyContent="flex-end"
+				>
+					<Button
+						id="contact-submit"
+						ref={(renderable) => {
+							controls.current[2] = renderable;
+						}}
+						label={status === "sending" ? "Sending..." : "Send message"}
+						size="comfortable"
+						disabled={status === "sending"}
+						onMouseDown={() => {
+							activate(2);
+							setFocusedField(null);
+						}}
+						onPress={() => void submit()}
+					/>
+				</box>
 				</box>
 			)}
 		</box>

@@ -99,17 +99,18 @@ export async function sendContactEmail(
   );
 
   const body = await response.json().catch(() => null) as {
-    result?: { delivered?: string[]; queued?: string[] };
+    success?: boolean;
+    result?: { permanent_bounces?: string[] };
   } | null;
-  if (!response.ok) {
+  if (!response.ok || body?.success === false) {
     console.error("[contact] Cloudflare Email Service failed", {
       status: response.status,
       body,
     });
     throw new Error("I couldn't send that right now. Please try again.");
   }
-  if (!(body?.result?.delivered?.length || body?.result?.queued?.length)) {
-    console.error("[contact] Cloudflare Email Service did not accept the message", body);
+  if (body?.result?.permanent_bounces?.length) {
+    console.error("[contact] Cloudflare Email Service bounced the message", body);
     throw new Error("I couldn't send that right now. Please try again.");
   }
 }

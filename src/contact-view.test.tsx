@@ -48,7 +48,6 @@ test("renders the form and contact cards as a wide grid", async () => {
   await setup.renderOnce();
 
   const frame = setup.captureCharFrame();
-  expect(frame).toContain("Send a message");
   expect(frame).not.toContain("Name (optional)");
   expect(frame).toContain("GitHub");
   expect(frame).toContain("Email");
@@ -127,7 +126,7 @@ test("renders bordered tuiparts form fields", async () => {
   await setup.renderOnce();
 
   const frame = setup.captureCharFrame();
-  expect(frame).toContain("Tab moves between fields.");
+  expect(frame).toContain("Send a message");
   expect(frame).toContain("you@example.com");
   expect(frame).toContain("Send message");
   expect(frame).not.toContain("Name (optional)");
@@ -253,4 +252,106 @@ test("locks submission before React rerenders", async () => {
     resolveSubmission?.();
     await Promise.resolve();
   });
+});
+
+test("replaces the form with an error and a Try again button on failure", async () => {
+  setup = await testRender(
+    <ContactForm
+      onSubmit={async () => {
+        throw new Error("I couldn't send that right now.");
+      }}
+    />,
+    { width: 80, height: 24 },
+  );
+  await setup.renderOnce();
+
+  const email = setup.renderer.root.findDescendantById("contact-email");
+  const message = setup.renderer.root.findDescendantById("contact-message");
+  if (
+    !email ||
+    !("value" in email) ||
+    !message ||
+    !("setText" in message) ||
+    typeof message.setText !== "function"
+  ) {
+    throw new Error("Contact fields were not rendered");
+  }
+  const setMessage = message.setText.bind(message);
+  await act(async () => {
+    email.value = "ada@example.com";
+    setMessage("Hello");
+  });
+  await setup.renderOnce();
+
+  const submit = setup.renderer.root.findDescendantById("contact-submit");
+  if (!submit || !("press" in submit) || typeof submit.press !== "function") {
+    throw new Error("Contact submit button was not rendered");
+  }
+  const press = submit.press.bind(submit);
+  await act(async () => {
+    press();
+    await Promise.resolve();
+  });
+  await setup.renderOnce();
+
+  let frame = setup.captureCharFrame();
+  expect(frame).toContain("I couldn't send that right now.");
+  expect(frame).toContain("Try again");
+  expect(frame).not.toContain("Send message");
+
+  const retry = setup.renderer.root.findDescendantById("contact-retry");
+  if (!retry || !("press" in retry) || typeof retry.press !== "function") {
+    throw new Error("Try again button was not rendered");
+  }
+  const pressRetry = retry.press.bind(retry);
+  await act(async () => {
+    pressRetry();
+  });
+  await setup.renderOnce();
+
+  frame = setup.captureCharFrame();
+  expect(frame).toContain("Send message");
+  expect(frame).not.toContain("Try again");
+});
+
+test("replaces the form with a sent message and no button on success", async () => {
+  setup = await testRender(<ContactForm onSubmit={async () => {}} />, {
+    width: 80,
+    height: 24,
+  });
+  await setup.renderOnce();
+
+  const email = setup.renderer.root.findDescendantById("contact-email");
+  const message = setup.renderer.root.findDescendantById("contact-message");
+  if (
+    !email ||
+    !("value" in email) ||
+    !message ||
+    !("setText" in message) ||
+    typeof message.setText !== "function"
+  ) {
+    throw new Error("Contact fields were not rendered");
+  }
+  const setMessage = message.setText.bind(message);
+  await act(async () => {
+    email.value = "ada@example.com";
+    setMessage("Hello");
+  });
+  await setup.renderOnce();
+
+  const submit = setup.renderer.root.findDescendantById("contact-submit");
+  if (!submit || !("press" in submit) || typeof submit.press !== "function") {
+    throw new Error("Contact submit button was not rendered");
+  }
+  const press = submit.press.bind(submit);
+  await act(async () => {
+    press();
+    await Promise.resolve();
+  });
+  await setup.renderOnce();
+
+  const frame = setup.captureCharFrame();
+  expect(frame).toContain("Sent. Thanks for saying hello");
+  expect(frame).not.toContain("Try again");
+  expect(frame).not.toContain("Send message");
 });

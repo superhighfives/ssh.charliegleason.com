@@ -61,6 +61,9 @@ export function App(props: AppProps) {
 function AppContent({ onExit, openUrl, sendContactMessage }: AppProps) {
   const [currentView, setCurrentView] = useState<View>("main");
   const [contactMode, setContactMode] = useState<"options" | "form">("options");
+  // Once a message has been sent this session the form can't be resubmitted,
+  // so it's taken out of keyboard/mouse navigation entirely.
+  const [contactSent, setContactSent] = useState(false);
   const [menuIndex, setMenuIndex] = useState(0);
   const [subIndex, setSubIndex] = useState(0);
   const [linkModal, setLinkModal] = useState<LinkItem | null>(null);
@@ -108,7 +111,8 @@ function AppContent({ onExit, openUrl, sendContactMessage }: AppProps) {
   };
 
   const moveContactSelection = (newIndex: number) => {
-    const clamped = Math.max(0, Math.min(contact.length, newIndex));
+    const min = contactSent ? 1 : 0;
+    const clamped = Math.max(min, Math.min(contact.length, newIndex));
     setSubIndex(clamped);
 
     const sb = scrollRef.current;
@@ -176,13 +180,13 @@ function AppContent({ onExit, openUrl, sendContactMessage }: AppProps) {
         setCurrentView("main");
       } else if (key.name === "return") {
         if (subIndex === 0) {
-          setContactMode("form");
+          if (!contactSent) setContactMode("form");
         } else {
           const item = contact[subIndex - 1];
           if (item) openLink({ title: item.label, url: item.url });
         }
       } else if (key.name === "tab" && subIndex === 0) {
-        setContactMode("form");
+        if (!contactSent) setContactMode("form");
       } else if (key.name === "up") {
         moveContactDirection("up");
       } else if (key.name === "down") {
@@ -363,8 +367,14 @@ function AppContent({ onExit, openUrl, sendContactMessage }: AppProps) {
           contact={contact}
           selectedIndex={subIndex}
           scrollRef={scrollRef}
-          onSubmit={sendContactMessage}
+          onSubmit={async (message) => {
+            await sendContactMessage(message);
+            setContactSent(true);
+            setContactMode("options");
+            moveContactSelection(1);
+          }}
           onActivateForm={() => {
+            if (contactSent) return;
             setSubIndex(0);
             setContactMode("form");
           }}
