@@ -186,7 +186,7 @@ export function ContactForm({
 							title="Email"
 							titleColor={colors.white}
 							paddingX={1}
-							onMouseDown={() => activate(1)}
+							onMouseDown={() => activate(0)}
 						>
 							<Input
 								id="contact-email"

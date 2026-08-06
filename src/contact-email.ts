@@ -102,7 +102,7 @@ export async function sendContactEmail(
     success?: boolean;
     result?: { permanent_bounces?: string[] };
   } | null;
-  if (!response.ok || body?.success === false) {
+  if (!response.ok || body === null || body?.success === false) {
     console.error("[contact] Cloudflare Email Service failed", {
       status: response.status,
       body,
