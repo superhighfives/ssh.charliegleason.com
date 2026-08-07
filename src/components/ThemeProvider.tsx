@@ -15,6 +15,8 @@ import { useRenderer } from "@opentui/react";
 import type { ThemeMode } from "@opentui/core";
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { palettes, dark, type Colors } from "../theme";
+import { tokensForColors } from "./ui/theme";
+import { TuipartsThemeProvider } from "./ui/use-theme";
 
 const ColorsContext = createContext<Colors>(dark);
 
@@ -39,5 +41,11 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   const colors = palettes[mode ?? "dark"];
 
-  return <ColorsContext.Provider value={colors}>{children}</ColorsContext.Provider>;
+  return (
+    <ColorsContext.Provider value={colors}>
+      <TuipartsThemeProvider tokens={tokensForColors(colors)}>
+        {children}
+      </TuipartsThemeProvider>
+    </ColorsContext.Provider>
+  );
 }

@@ -35,8 +35,13 @@ const SPARK_CHARS = ["*", "•", "·"];
 
 // Embers fountain up from the grey rule at the bottom; this gravity pulls them
 // back down as they arc toward the header rule above.
-const GRAVITY = 0.05;
-const DECAY = 0.035; // life lost per tick (~28 ticks to burn out)
+//
+// Ticking at 70ms (~14fps) rather than 40ms: over SSH each tick's redraw has to
+// be diffed and pushed down the channel, competing with input for bandwidth.
+// The per-tick physics below are scaled up by the same 70/40 ratio so real-time
+// motion speed is unchanged — just rendered at a lower, cheaper frame rate.
+const GRAVITY = 0.0875;
+const DECAY = 0.06125; // life lost per tick (~16 ticks to burn out)
 // A keypress sets off a row of little fireworks strung across the whole band
 // at once (one cluster per ~12 columns, clamped), rather than a single big pile
 // in one spot.
@@ -46,9 +51,9 @@ const PRESS_MIN_CLUSTERS = 4;
 const PRESS_MAX_CLUSTERS = 12;
 const SCROLL_BURST = 14; // embers per wheel-scroll tick (single origin)
 const MAX_SPARKS = 900; // safety cap so mashed keys can't pile up unbounded
-const TICK_MS = 40;
-// Chance per tick of an unprompted ambient ember (~one every ~2s at 40ms).
-const AMBIENT_CHANCE = 0.02;
+const TICK_MS = 70;
+// Chance per tick of an unprompted ambient ember (~one every ~2s).
+const AMBIENT_CHANCE = 0.035;
 
 function sparkChar(life: number): string {
   if (life > 0.66) return SPARK_CHARS[0]!;
@@ -106,8 +111,8 @@ export const SparkField = forwardRef<SparkFieldHandle, SparkFieldProps>(
         sparks.push({
           x: origin + (Math.random() - 0.5) * spread,
           y: height - 1, // spring up from the bottom rule; gravity arcs them back
-          vx: (Math.random() - 0.5) * (energetic ? 1.8 : 1.2),
-          vy: -(energetic ? 0.5 + Math.random() * 1.2 : 0.5 + Math.random() * 0.9),
+          vx: (Math.random() - 0.5) * (energetic ? 3.15 : 2.1),
+          vy: -(energetic ? 0.875 + Math.random() * 2.1 : 0.875 + Math.random() * 1.575),
           life: energetic ? 0.8 + Math.random() * 0.3 : 0.6 + Math.random() * 0.3,
           kind,
         });

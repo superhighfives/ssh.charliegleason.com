@@ -12,6 +12,7 @@ import { useLayout } from "./useLayout";
 
 type ViewHeaderProps = {
 	title: string;
+	navigationLabel?: string;
 	// Right-hand portion of the help line (after "← Back (esc)  •  "). Hidden
 	// on compact terminals.
 	hint: string;
@@ -20,7 +21,12 @@ type ViewHeaderProps = {
 	flush?: boolean;
 };
 
-export function ViewHeader({ title, hint, flush = false }: ViewHeaderProps) {
+export function ViewHeader({
+	title,
+	navigationLabel = "← Back (esc)",
+	hint,
+	flush = false,
+}: ViewHeaderProps) {
 	const colors = useColors();
 	const { contentWidth, isCompact } = useLayout();
 	// Layout: "brand / page title" (brand quiet, title bold) / controls, then a
@@ -31,7 +37,7 @@ export function ViewHeader({ title, hint, flush = false }: ViewHeaderProps) {
 			<text fg={colors.yellow} content={t`Charlie Gleason / ${bold(title)}`} />
 			<text
 				fg={colors.dim}
-				content={isCompact ? "← Back (esc)" : `← Back (esc) · ${hint}`}
+				content={isCompact ? navigationLabel : `${navigationLabel} · ${hint}`}
 			/>
 			<box height={1} flexShrink={0} />
 			{/* One column short of full width so the rule clears the scrollbar

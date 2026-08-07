@@ -76,9 +76,13 @@ export function ShaderArt({
 	const [time, setTime] = useState(0);
 
 	useEffect(() => {
+		// Throttled well below the renderer's 30fps cap: over SSH every tick means
+		// a full shader repaint has to be diffed and pushed down the channel,
+		// competing with input for bandwidth. 90ms (~11fps) still reads as smooth
+		// motion but cuts that traffic by two-thirds.
 		const interval = setInterval(() => {
-			setTime((t) => t + 0.05);
-		}, 30);
+			setTime((t) => t + 0.15);
+		}, 90);
 
 		return () => clearInterval(interval);
 	}, []);

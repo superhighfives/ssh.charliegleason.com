@@ -12,6 +12,7 @@ import { App, type OpenUrl } from "./index";
 import { startContentSync } from "./data/store";
 import { startLiveSync } from "./data/live";
 import { addSession } from "./data/sessions";
+import { sendContactEmail } from "./contact-email";
 
 const openUrl: OpenUrl = (url) => {
   // URLs are stored bare (see store's tidyUrl). Re-derive the scheme: keep an
@@ -46,4 +47,10 @@ startLiveSync();
 // Count this local viewer as a session ("Just you").
 addSession();
 
-createRoot(renderer).render(<App onExit={cleanup} openUrl={openUrl} />);
+createRoot(renderer).render(
+  <App
+    onExit={cleanup}
+    openUrl={openUrl}
+    sendContactMessage={(message) => sendContactEmail(message, "local-dev")}
+  />,
+);

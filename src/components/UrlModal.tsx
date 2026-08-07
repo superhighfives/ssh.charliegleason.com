@@ -10,6 +10,12 @@ import { TextAttributes } from "@opentui/core";
 import { useKeyboard, useRenderer } from "@opentui/react";
 import { useEffect, useRef, useState } from "react";
 import { useColors } from "./ThemeProvider";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+} from "./ui/dialog";
 
 type UrlModalProps = {
   title: string;
@@ -22,11 +28,10 @@ export function UrlModal({ title, url, onClose }: UrlModalProps) {
   const renderer = useRenderer();
   const [copied, setCopied] = useState(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
   const href = url.startsWith("http") ? url : `https://${url}`;
 
   useKeyboard((key) => {
-    if (key.name === "escape" || key.name === "q") {
+    if (key.name === "q") {
       onClose();
     } else if (key.name === "return") {
       renderer.copyToClipboardOSC52(href);
@@ -43,25 +48,18 @@ export function UrlModal({ title, url, onClose }: UrlModalProps) {
   }, []);
 
   return (
-    <box
-      position="absolute"
-      left={0}
-      top={0}
-      width="100%"
-      height="100%"
-      justifyContent="center"
-      alignItems="center"
-      zIndex={100}
+    <Dialog
+      open
+      onOpenChange={(open) => {
+        if (!open) onClose();
+      }}
     >
-      <box
-        flexDirection="column"
-        border
-        borderColor={colors.yellow}
-        padding={2}
-        backgroundColor={colors.background}
-        minWidth={50}
-      >
-        <text fg={colors.yellow} attributes={TextAttributes.BOLD} content="Open link" />
+      <DialogContent borderColor={colors.yellow} padding={2} minWidth={50}>
+        <DialogTitle
+          fg={colors.yellow}
+          attributes={TextAttributes.BOLD}
+          content="Open link"
+        />
         <box marginTop={1}>
           <text fg={colors.white} content={title} />
         </box>
@@ -73,13 +71,13 @@ export function UrlModal({ title, url, onClose }: UrlModalProps) {
           />
         </box>
         <box marginTop={1}>
-          <text
+          <DialogDescription
             fg={copied ? colors.yellow : colors.dim}
             content={copied ? "✔︎ Copied" : "Press enter to copy the URL"}
           />
         </box>
         <text fg={colors.dim} content="Press esc to close." />
-      </box>
-    </box>
+      </DialogContent>
+    </Dialog>
   );
 }

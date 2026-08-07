@@ -1,25 +1,25 @@
 // src/components/Menu.tsx
 
 import { menuItems } from "../data/content";
-import { useColors } from "./ThemeProvider";
+import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
 
 type MenuProps = {
   selectedIndex: number;
+  onSelectedIndexChange: (index: number) => void;
 };
 
-export function Menu({ selectedIndex }: MenuProps) {
-  const colors = useColors();
+export function Menu({ selectedIndex, onSelectedIndexChange }: MenuProps) {
   return (
-    <box flexDirection="column">
-      {menuItems.map((item, index) => {
-        const isSelected = index === selectedIndex;
-        return (
-          <text key={item} fg={isSelected ? colors.yellow : colors.dim}>
-            {isSelected ? "> " : "  "}
-            {item}
-          </text>
-        );
-      })}
-    </box>
+    <RadioGroup
+      value={menuItems[selectedIndex]}
+      onValueChange={(value) => {
+        const index = menuItems.indexOf(value as (typeof menuItems)[number]);
+        if (index >= 0) onSelectedIndexChange(index);
+      }}
+    >
+      {menuItems.map((item) => (
+        <RadioGroupItem key={item} value={item} label={item} />
+      ))}
+    </RadioGroup>
   );
 }
