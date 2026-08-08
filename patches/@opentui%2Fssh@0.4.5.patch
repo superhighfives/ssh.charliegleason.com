@@ -1,11 +1,33 @@
+diff --git a/node_modules/@opentui/ssh/.bun-tag-973251d0ec1374e3 b/.bun-tag-973251d0ec1374e3
+new file mode 100644
+index 0000000000000000000000000000000000000000..e69de29bb2d1d6434b8b29ae775ad8c2e48c5391
 diff --git a/index.js b/index.js
-index a9212b248ab04f0ae8f04baeeec4df37374c4ea3..ce674e14ac263ab601aa622df3b759def58c1a1a 100644
+index a9212b248ab04f0ae8f04baeeec4df37374c4ea3..9ba88f2839f78c5a2702ee14e34436e3571e82e6 100644
 --- a/index.js
 +++ b/index.js
-@@ -577,6 +577,24 @@ function createConnectionHandler(dependencies) {
+@@ -573,9 +573,41 @@ function createConnectionHandler(dependencies) {
+           };
            accept?.();
-           activeBridge?.resize(info2.cols, info2.rows);
          });
++        // Debounced: some terminal clients send a corrective window-change a
++        // beat after the shell opens (window/font metrics settling on a
++        // freshly-opened window). Applying that immediately makes the renderer
++        // relayout and redraw the whole screen right after connecting, which
++        // reads as the UI "resizing" unprompted. Acking the request is still
++        // immediate (the client expects it); only the resize applied to the
++        // renderer is held until the size has been stable for a beat, so a
++        // burst of corrections collapses into a single, later relayout.
++        let resizeTimer;
+         sshSession.on("window-change", (accept, _reject, info2) => {
+           accept?.();
+-          activeBridge?.resize(info2.cols, info2.rows);
++          const { cols, rows } = info2;
++          if (resizeTimer) clearTimeout(resizeTimer);
++          resizeTimer = setTimeout(() => {
++            resizeTimer = undefined;
++            activeBridge?.resize(cols, rows);
++          }, 180);
++        });
 +        sshSession.on("exec", (accept, reject, info2) => {
 +          // Ghostty uses an exec channel to install its terminfo before opening
 +          // the shell. Accept only that probe; this public server runs no
@@ -23,7 +45,6 @@ index a9212b248ab04f0ae8f04baeeec4df37374c4ea3..ce674e14ac263ab601aa622df3b759de
 +            channel.exit(0);
 +            channel.end();
 +          });
-+        });
+         });
          sshSession.on("shell", (accept, reject) => {
            if (!acceptingSessions || connectionSessions >= sessionLimits.perConnection || activeSessions >= sessionLimits.global) {
-             reject?.();
