@@ -266,6 +266,7 @@ export function ContactForm({
 				<box
 					flexDirection="row"
 					justifyContent="flex-end"
+					paddingRight={1}
 				>
 					<Button
 						id="contact-submit"
