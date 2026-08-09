@@ -27,6 +27,23 @@ export function ContactView({
   const colors = useColors();
   const { contentWidth, contentHeight, isStacked } = useLayout();
 
+  // The two-column grid's width is fixed to what's available once the
+  // vertical scrollbar's column is reserved (1 for its track + the scrollbox's
+  // own 1-col paddingRight below), rather than the 100% of viewport it'd get
+  // by default. The scrollbar only occupies that column when content
+  // overflows, reclaiming it otherwise — if the grid filled 100% of viewport,
+  // its flexBasis-0/flexGrow-1 columns would redistribute that reclaimed
+  // column the moment the bar toggles, visibly shifting every border. Fixing
+  // the width means the grid never reacts to the toggle: on a scrollable view
+  // it fits exactly, on one that fits there's a spare column of unused
+  // padding on the right — imperceptible, and the bar is free to auto-hide
+  // normally. Only the two-column layout needs this: the stacked (narrow)
+  // layout is a single column with nothing to redistribute space with, so a
+  // 1-col change there is as imperceptible as it is on every other
+  // single-column view (About, Projects, etc.) — reserving it anyway just
+  // made the form needlessly tight.
+  const gridWidth = Math.max(0, contentWidth - 2);
+
   const contactCards = contact.map((item, index) => {
     const optionIndex = index + 1;
     const isSelected = optionIndex === selectedIndex;
@@ -86,7 +103,7 @@ export function ContactView({
               {contactCards}
             </box>
           ) : (
-            <box flexDirection="column" gap={1}>
+            <box flexDirection="column" width={gridWidth} gap={1}>
               <box flexDirection="row" gap={1} alignItems="flex-start">
                 <box flexDirection="column" flexBasis={0} flexGrow={1}>
                   {form}
