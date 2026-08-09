@@ -76,7 +76,7 @@ export function ContactForm({
 		try {
 			await onSubmit({ email, message });
 			setStatus("sent");
-			setFeedback("Sent. Thanks for saying hello - I'll get back to you soon.");
+			setFeedback("Sent. Thanks for saying hello.");
 		} catch (error) {
 			submitting.current = false;
 			setStatus("error");
@@ -252,37 +252,33 @@ export function ContactForm({
 											message: undefined,
 										}));
 									}
+								}}
+							/>
+						</box>
+						{fieldErrors.message && (
+							<text
+								fg={colors.error}
+								content={fieldErrors.message}
+								wrapMode="word"
+							/>
+						)}
+					</box>
+					<box flexDirection="row" justifyContent="flex-end" paddingRight={1}>
+						<Button
+							id="contact-submit"
+							ref={(renderable) => {
+								controls.current[2] = renderable;
 							}}
+							label={status === "sending" ? "Sending..." : "Send message"}
+							size="comfortable"
+							disabled={status === "sending"}
+							onMouseDown={() => {
+								activate(2);
+								setFocusedField(null);
+							}}
+							onPress={() => void submit()}
 						/>
 					</box>
-					{fieldErrors.message && (
-						<text
-							fg={colors.error}
-							content={fieldErrors.message}
-							wrapMode="word"
-						/>
-					)}
-				</box>
-				<box
-					flexDirection="row"
-					justifyContent="flex-end"
-					paddingRight={1}
-				>
-					<Button
-						id="contact-submit"
-						ref={(renderable) => {
-							controls.current[2] = renderable;
-						}}
-						label={status === "sending" ? "Sending..." : "Send message"}
-						size="comfortable"
-						disabled={status === "sending"}
-						onMouseDown={() => {
-							activate(2);
-							setFocusedField(null);
-						}}
-						onPress={() => void submit()}
-					/>
-				</box>
 				</box>
 			)}
 		</box>
