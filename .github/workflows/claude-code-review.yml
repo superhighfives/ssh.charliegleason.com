@@ -23,4 +23,6 @@ jobs:
       setup_command: bun install --frozen-lockfile
       verify_commands: |
         bun run typecheck
-    secrets: inherit
+    secrets:
+      CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+      APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
